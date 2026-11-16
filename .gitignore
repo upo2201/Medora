@@ -1,0 +1,70 @@
+# Environment & Secrets (Never commit secrets)
+.env
+.env.*
+*.env
+!.env.example
+backend/.env
+frontend/.env
+
+# Runtime State & Tunnels
+.tunnel_state.json
+*.tunnel_state.json
+
+# Databases & Local Storage
+*.db
+*.sqlite
+*.sqlite3
+backend/medora.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+dist-ssr/
+*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Binaries
+bin/ngrok.exe
+bin/ngrok
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+

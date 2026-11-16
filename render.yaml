@@ -1,0 +1,37 @@
+services:
+  # Frontend Static Site
+  - type: static
+    name: medora-frontend
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+
+  # Backend Flask Web Service
+  - type: web
+    name: medora-backend
+    runtime: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: gunicorn --chdir backend run:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SECRET_KEY
+        generateValue: true
+      - key: EMERGENCY_BASE_URL
+        fromService:
+          type: static
+          name: medora-frontend
+          property: host
+      - key: FRONTEND_URL
+        fromService:
+          type: static
+          name: medora-frontend
+          property: host
+
