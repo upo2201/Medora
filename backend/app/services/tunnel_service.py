@@ -145,11 +145,15 @@ def get_public_frontend_url(fallback_candidate: Optional[str] = None) -> str:
 
     # 2. Explicit non-localhost candidate override (e.g. custom domain)
     if candidate and "localhost" not in candidate_lower and "127.0.0.1" not in candidate_lower:
+        if not candidate.startswith("http://") and not candidate.startswith("https://"):
+            candidate = f"https://{candidate}"
         return candidate
 
     # 3. Configured EMERGENCY_BASE_URL (e.g. deployed production on cloud)
     configured = (Config.EMERGENCY_BASE_URL or "").strip().rstrip("/")
     if configured and "localhost" not in configured.lower() and "127.0.0.1" not in configured.lower():
+        if not configured.startswith("http://") and not configured.startswith("https://"):
+            configured = f"https://{configured}"
         return configured
 
     # 4. Request headers if running behind cloud proxy / container
@@ -166,4 +170,7 @@ def get_public_frontend_url(fallback_candidate: Optional[str] = None) -> str:
         pass
 
     # 5. Fallback candidate or configured FRONTEND_URL
-    return (Config.FRONTEND_URL or "http://localhost:5173").strip().rstrip("/")
+    final_url = (Config.FRONTEND_URL or "http://localhost:5173").strip().rstrip("/")
+    if final_url and not final_url.startswith("http://") and not final_url.startswith("https://"):
+        final_url = f"https://{final_url}"
+    return final_url

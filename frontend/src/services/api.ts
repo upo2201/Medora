@@ -1,15 +1,21 @@
 import { MedicalProfile, EmergencyVisibility, QRToken, AccessLog, NotificationItem, EmergencyPublicData, User } from '../types';
 
 const getApiBaseUrl = (): string => {
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  let envUrl = import.meta.env.VITE_API_BASE_URL;
   if (envUrl) {
-    const clean = envUrl.trim().replace(/\/$/, '');
+    let clean = envUrl.trim().replace(/\/$/, '');
+    if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+      clean = `https://${clean}`;
+    }
     return clean.endsWith('/api') ? clean : `${clean}/api`;
   }
   if (typeof window !== 'undefined') {
     const custom = localStorage.getItem('medora_api_base_url');
     if (custom) {
-      const clean = custom.trim().replace(/\/$/, '');
+      let clean = custom.trim().replace(/\/$/, '');
+      if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+        clean = `https://${clean}`;
+      }
       return clean.endsWith('/api') ? clean : `${clean}/api`;
     }
     if (window.location && window.location.origin) {

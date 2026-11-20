@@ -12,13 +12,21 @@ services:
       - path: /*
         name: Cache-Control
         value: public, max-age=0, must-revalidate
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: medora-backend
+          property: host
 
   # Backend Flask Web Service
   - type: web
     name: medora-backend
     runtime: python
+    plan: free
     buildCommand: pip install -r backend/requirements.txt
-    startCommand: gunicorn --chdir backend run:app --bind 0.0.0.0:$PORT
+    startCommand: gunicorn --chdir backend run:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120
+    healthCheckPath: /api/health
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
