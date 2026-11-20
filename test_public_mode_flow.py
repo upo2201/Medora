@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "back
 
 from app import create_app
 from app.services.tunnel_service import set_active_tunnel, clear_active_tunnel, get_active_tunnel_url
-from app.services.qr_service import sanitize_base_url, get_emergency_url, create_or_regenerate_qr
+from app.services.qr_service import sanitize_base_url, get_emergency_url
 from seed import seed_demo_data
 
 class TestPublicModeTunnelFlow(unittest.TestCase):

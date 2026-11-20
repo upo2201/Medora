@@ -3,25 +3,19 @@ import {
   Save,
   Plus,
   Trash2,
-  Shield,
   User,
   HeartPulse,
   Pill,
   Phone,
   AlertCircle,
   Eye,
-  CheckCircle2,
-  Mail,
-  ShieldAlert,
-  ShieldCheck,
-  Key
+  Mail
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Badge } from '../components/ui/Badge';
 import { useToast } from '../components/ui/Toast';
 import { api } from '../services/api';
 import { MedicalProfile, EmergencyVisibility, MedicationItem } from '../types';

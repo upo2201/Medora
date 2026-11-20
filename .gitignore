@@ -14,7 +14,15 @@ frontend/.env
 *.db
 *.sqlite
 *.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
 backend/medora.db
+
+# Coverage & Test Caches
+.coverage
+htmlcov/
+.pytest_cache/
 
 # Python
 __pycache__/

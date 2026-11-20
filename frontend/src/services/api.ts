@@ -68,18 +68,6 @@ class ApiService {
     return data;
   }
 
-  async verifyEmergencyEmail(_params?: { code?: string; token?: string }): Promise<{ success: boolean; message: string }> {
-    return { success: true, message: 'Email verification is not required in simplified mode.' };
-  }
-
-  async sendVerificationCode(_email?: string): Promise<{ success: boolean; message: string }> {
-    return { success: true, message: 'Email verification is not required.' };
-  }
-
-  async resendVerificationEmail(_email?: string): Promise<{ success: boolean; message: string }> {
-    return { success: true, message: 'Email verification is not required.' };
-  }
-
   async getEmailProviderStatus(): Promise<{ configured: boolean; provider: string; name: string }> {
     try {
       const res = await fetch(`${API_BASE_URL}/dev/email-provider-status`, {

@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.services.tunnel_service import get_tunnel_status, set_active_tunnel, clear_active_tunnel
-from app.services.qr_service import get_active_qr_token, get_emergency_url
+from app.services.qr_service import get_active_qr_token
 from app.middleware.authentication import token_required
 
 dev_bp = Blueprint("dev", __name__)

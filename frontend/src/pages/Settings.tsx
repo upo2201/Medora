@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  User,
   Lock,
-  ShieldAlert,
   Trash2,
-  CheckCircle2,
-  AlertTriangle,
-  Info
+  AlertTriangle
 } from 'lucide-react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { Card } from '../components/ui/Card';

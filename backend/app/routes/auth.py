@@ -1,5 +1,4 @@
 import uuid
-import hashlib
 from datetime import datetime, timezone, timedelta
 from flask import Blueprint, request, jsonify, g
 import jwt
@@ -7,7 +6,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app.config import Config
 from app.database import get_db
 from app.middleware.authentication import token_required
-from app.services.qr_service import create_or_regenerate_qr
 
 auth_bp = Blueprint("auth", __name__)
 

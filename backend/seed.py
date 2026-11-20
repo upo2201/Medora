@@ -1,5 +1,4 @@
 import json
-import uuid
 import sys
 from datetime import datetime, timezone
 from werkzeug.security import generate_password_hash

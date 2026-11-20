@@ -1,9 +1,8 @@
 import hashlib
 import json
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from app.database import get_db
-from app.config import Config
 from app.services.email_service import send_emergency_scan_alert_async
 
 def parse_user_agent(ua_string: str):

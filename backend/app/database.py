@@ -1,7 +1,4 @@
 import sqlite3
-import json
-import uuid
-from datetime import datetime, timezone
 import os
 from app.config import Config
 

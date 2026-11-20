@@ -7,7 +7,6 @@ import {
   ShieldAlert,
   AlertTriangle,
   Info,
-  Lock,
   ExternalLink,
   Copy,
   QrCode,

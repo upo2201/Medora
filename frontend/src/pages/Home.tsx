@@ -11,13 +11,11 @@ import {
   CheckCircle2,
   ChevronDown,
   ArrowRight,
-  HeartHandshake,
-  FileText,
-  AlertTriangle
+  HeartHandshake
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { Button } from '../components/ui/Button';
-import { Card, CardContent } from '../components/ui/Card';
+import { Card } from '../components/ui/Card';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();

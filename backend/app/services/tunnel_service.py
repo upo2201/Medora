@@ -2,7 +2,6 @@ import os
 import json
 import time
 import urllib.request
-import urllib.error
 from typing import Optional, Dict, Any
 
 _backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))

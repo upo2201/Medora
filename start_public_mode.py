@@ -12,7 +12,6 @@ import json
 import signal
 import shutil
 import urllib.request
-import urllib.error
 import subprocess
 from typing import Optional
 

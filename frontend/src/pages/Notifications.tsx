@@ -3,7 +3,6 @@ import {
   Bell,
   CheckCheck,
   AlertCircle,
-  Info,
   Calendar,
   Sparkles,
   Mail

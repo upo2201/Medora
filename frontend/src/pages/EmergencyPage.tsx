@@ -7,18 +7,14 @@ import {
   Pill,
   Heart,
   Droplets,
-  User,
   ShieldCheck,
   ShieldAlert,
-  Globe,
   Stethoscope,
-  Clock,
   ArrowLeft
 } from 'lucide-react';
 import { api } from '../services/api';
 import { EmergencyPublicData, Language } from '../types';
 import { translations } from '../utils/translations';
-import { Badge } from '../components/ui/Badge';
 
 export const EmergencyPage: React.FC = () => {
   const { token } = useParams<{ token: string }>();

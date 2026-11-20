@@ -10,11 +10,10 @@ import {
   Smartphone,
   Printer,
   Sparkles,
-  Calendar,
-  AlertCircle
+  Calendar
 } from 'lucide-react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
-import { Card, CardContent } from '../components/ui/Card';
+import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { useAuth } from '../contexts/AuthContext';

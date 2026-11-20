@@ -8,8 +8,7 @@ import {
   Bell,
   Settings,
   LogOut,
-  HeartPulse,
-  HelpCircle
+  HeartPulse
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../utils/cn';

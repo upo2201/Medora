@@ -18,7 +18,7 @@ When scanned by any bystander or paramedic using a standard smartphone camera:
 - It exposes **only** the clinical fields explicitly approved by the profile owner (e.g. blood group, allergies, medications, and primary physician).
 - It provides a prominent **one-tap emergency contact dialing button** (`tel:` link).
 - The entire interface seamlessly switches between **English**, **বাংলা (Bengali)**, and **हिन्दी (Hindi)**.
-- The system logs the scan event in a privacy-conscious audit trail (device category and timestamp, never raw IP or precise GPS coordinates) and records a **simulated demonstration notification** for the account owner.
+- The system logs the scan event in a privacy-conscious audit trail (device category and timestamp, never raw IP or precise GPS coordinates) and automatically dispatches an immediate email alert to the registered emergency notification address.
 
 ---
 
@@ -70,7 +70,7 @@ Medora/
 │   │   │   ├── access_logs.py        # /api/access-logs (audit history & statistics)
 │   │   │   ├── auth.py               # /api/auth (register, login, me, password, delete)
 │   │   │   ├── emergency.py          # /api/emergency/<token> (public read-only scan)
-│   │   │   ├── notifications.py      # /api/notifications (simulated alerts)
+│   │   │   ├── notifications.py      # /api/notifications (scan alerts & notifications)
 │   │   │   ├── profiles.py           # /api/profile (medical data & privacy toggles)
 │   │   │   └── qr.py                 # /api/qr (generation, revoke, PNG, PDF, wallpaper)
 │   │   ├── services/
@@ -99,7 +99,7 @@ Medora/
 │   │   │   ├── EmergencyPage.tsx     # Public multilingual emergency view
 │   │   │   ├── Home.tsx              # Editorial split-hero landing page & FAQ
 │   │   │   ├── Login.tsx             # Split-screen authentication with demo shortcut
-│   │   │   ├── Notifications.tsx     # Simulated demonstration alert logs
+│   │   │   ├── Notifications.tsx     # Emergency scan alerts and in-app logs
 │   │   │   ├── Profile.tsx           # Multi-section medical editor & privacy toggles
 │   │   │   ├── QRManagement.tsx      # QR preview, downloads, phone mockup, revoke
 │   │   │   ├── Settings.tsx          # Password, credentials, account deletion
@@ -234,7 +234,7 @@ Double-click `start_public_mode.bat` or run in PowerShell:
 1. Starts the **Flask API backend** on `http://127.0.0.1:5000`.
 2. Starts the **Vite dev server** on `http://localhost:5173` with single-origin `/api` proxying and `allowedHosts: true`.
 3. Establishes a secure public HTTPS tunnel using **ngrok** forwarding to port 5173.
-4. Auto-detects the public ngrok domain (e.g. `https://palpitate-antiquity-establish.ngrok-free.dev`) and registers it in the background.
+4. Auto-detects the public ngrok domain (e.g. `https://your-session-id.ngrok-free.dev`) and registers it in the background.
 5. All newly generated QR codes automatically encode the public HTTPS URL.
 6. The user interface remains completely clean and distraction-free (no dev banners or raw tunnel URLs displayed).
 7. If your public tunnel changes upon restarting, an in-place refresh button updates the QR image and emergency link without altering your cryptographic token or privacy settings.
@@ -256,29 +256,29 @@ Medora features a permanent, server-side transactional email notification archit
 1. **Mandatory Emergency Notification Email:**
    - Required during account registration (`/signup`), distinct from the account login email.
    - Can belong to the patient, an adult child, spouse, or primary caregiver.
-   - Requires verification before scan alerts are enabled (via 6-digit numeric security code or 1-click verification URL token).
+   - Saves directly to the profile with scan alerts enabled immediately (zero OTP or verification code friction).
 2. **Permanent Server-Side Email Providers Supported:**
-   - **Resend** (Recommended): `RESEND_API_KEY=re_...`
-   - **Brevo** (formerly Sendinblue): `BREVO_API_KEY=xkeysib-...`
+   - **Brevo** (Recommended API): `BREVO_API_KEY=xkeysib-...`
+   - **Resend**: `RESEND_API_KEY=re_...`
    - **SendGrid**: `SENDGRID_API_KEY=SG....`
    - **Custom SMTP Fallback**: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`
    - **Honest Provider Status Reporting:** If no provider is configured on the backend, Medora never pretends emails were delivered; it logs `[EMAIL INFRASTRUCTURE UNCONFIGURED]` with actionable administrator guidance in the server logs and returns `PROVIDER_NOT_CONFIGURED`.
 3. **Automatic Emergency Scan Alerts:**
-   - Every successful public access to an active QR emergency page automatically triggers a high-priority alert email to the verified emergency notification address.
+   - Every successful public access to an active QR emergency page automatically triggers a high-priority alert email to the emergency notification address.
    - **Zero Clinical Data:** In accordance with strict medical privacy, diagnoses, medications, allergies, and blood group are **strictly excluded** from notification emails. The alert includes only the patient's name, UTC timestamp, high-level device category (e.g. `Mobile (iOS)`), and browser family.
    - **No Cooldown Suppressing Legitimate Scans:** Legitimately separate scans made minutes or seconds apart each generate an alert. Only rapid duplicate requests (< 2.0 seconds with identical client fingerprint) caused by browser pre-fetching or double-taps are deduplicated.
    - **Asynchronous Non-Blocking Execution:** Emails are dispatched asynchronously in background daemon threads, ensuring the public emergency page loads instantaneously for first responders.
 4. **Safe Address Updates:**
-   - Users can update their notification email in **My Profile** (`/profile`).
-   - Changing an address places the new email in `pending_emergency_notification_email` and sends a new verification code. The previously verified email continues to receive emergency alerts until the new address is verified.
+   - Caregivers can update their notification email at any time in **My Profile** (`/profile`).
+   - The updated address saves immediately to the profile and receives subsequent emergency alerts.
 5. **Developer Configuration in `backend/.env`:**
    ```bash
-   # Option A: Resend (Recommended)
-   RESEND_API_KEY=re_your_api_key_here
+   # Option A: Brevo (Recommended API)
+   BREVO_API_KEY=xkeysib-your_brevo_api_key
    EMAIL_FROM="Medora Safety Alerts <alerts@yourdomain.com>"
 
-   # Option B: Brevo
-   # BREVO_API_KEY=xkeysib-your_api_key_here
+   # Option B: Resend
+   # RESEND_API_KEY=re_your_api_key_here
 
    # Option C: SendGrid
    # SENDGRID_API_KEY=SG.your_api_key_here
@@ -310,7 +310,8 @@ You can verify the complete acceptance criteria across all three roles:
 
 ### B. The Emergency Bystander / First Responder
 1. Open the public emergency link in an incognito window or smartphone browser without logging in:  
-   `https://medora-emergency.onrender.com/emergency/<YOUR_GENERATED_TOKEN>`
+   `http://localhost:5173/emergency/<YOUR_GENERATED_TOKEN>`  
+   *(or the active public ngrok tunnel link generated in Public Testing Mode)*
 2. Notice the rapid loading time, clean burgundy header, and visible patient details (Ananya Sen, Age 72, B+).
 3. Test the language switcher in the header:
    - Click **বাংলা** to see the entire emergency interface translated into authentic Bengali.
@@ -322,7 +323,7 @@ You can verify the complete acceptance criteria across all three roles:
 
 ### C. The System
 1. Go to **Access Logs** (`/access-logs`) in the logged-in dashboard. Observe the new audit entry showing device family and timestamp.
-2. Go to **Notifications** (`/notifications`) to inspect the simulated demonstration alert generated from the emergency scan.
+2. Go to **Notifications** (`/notifications`) to inspect the emergency scan alert entry, and verify receipt of the alert email sent to the stored emergency notification address.
 
 ---
 

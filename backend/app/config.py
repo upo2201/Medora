@@ -39,10 +39,7 @@ class Config:
         DATABASE_PATH = os.path.abspath(os.path.join(backend_dir, raw_db_path))
     RATELIMIT_STORAGE_URI = os.getenv("REDIS_URL", "memory://")
     
-    # Notification & Cooldown
-    NOTIFICATION_COOLDOWN_SECONDS = int(os.getenv("NOTIFICATION_COOLDOWN_SECONDS", "30"))
-    
-    # Transactional Email Providers (Server-Side Developer Settings: Resend, Brevo, SendGrid, or SMTP)
+    # Transactional Email Providers (Server-Side Developer Settings: Brevo, Resend, SendGrid, or SMTP)
     # The application owner/developer configures this once. End users never touch these.
     RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
     BREVO_API_KEY = os.getenv("BREVO_API_KEY", "").strip()

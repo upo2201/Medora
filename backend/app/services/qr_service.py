@@ -2,10 +2,9 @@ import secrets
 import hashlib
 import uuid
 import io
-import json
 import base64
 from datetime import datetime, timezone
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 import qrcode
 from qrcode.constants import ERROR_CORRECT_H
 from cryptography.fernet import Fernet
