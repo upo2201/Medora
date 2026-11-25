@@ -53,8 +53,10 @@ def seed_demo_data(reset=False):
                (id, user_id, full_name, age, blood_group, medical_conditions, allergies, no_known_allergies,
                 current_medications, doctor_name, doctor_contact, emergency_contact_name,
                 emergency_contact_relationship, emergency_contact_phone, emergency_contact_email,
-                emergency_notification_email, emergency_email_verified, created_at, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)""",
+                emergency_notification_email, emergency_email_verified,
+                preferred_language, emergency_second_language, full_name_secondary, emergency_contact_name_secondary,
+                created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, 1, 'en', 'bn', 'অনন্যা সেন', 'রিতু সেন', ?, ?)""",
             (
                 profile_id, user_id, full_name, 72, "B+", conditions, allergies,
                 medications, "Dr. R. Chatterjee", "+91 98765 12345",

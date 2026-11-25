@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HeartPulse, Menu, X } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { LanguageSelector } from '../ui/LanguageSelector';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   return (
@@ -19,10 +22,10 @@ export const Navbar: React.FC = () => {
           </div>
           <div>
             <span className="font-serif font-bold text-xl text-burgundy-deep tracking-tight block leading-tight">
-              Medora
+              {t.common.appName}
             </span>
             <span className="text-[10px] uppercase font-semibold tracking-wider text-text-muted block">
-              Emergency Medical ID
+              {t.common.appTagline}
             </span>
           </div>
         </Link>
@@ -34,32 +37,37 @@ export const Navbar: React.FC = () => {
           <a href="#faq" className="hover:text-burgundy transition-colors">FAQ</a>
         </nav>
 
-        {/* Action Buttons */}
-        <div className="hidden md:flex items-center gap-3">
+        {/* Language Selector and Action Buttons */}
+        <div className="hidden md:flex items-center gap-4">
+          <LanguageSelector variant="pills" />
+
           {user ? (
             <Button variant="primary" onClick={() => navigate('/dashboard')}>
-              Go to Dashboard
+              {t.common.dashboard}
             </Button>
           ) : (
-            <>
+            <div className="flex items-center gap-2.5">
               <Button variant="cream" onClick={() => navigate('/login')}>
-                Log In
+                {t.common.login}
               </Button>
               <Button variant="primary" onClick={() => navigate('/signup')}>
-                Create Profile
+                {t.common.signup}
               </Button>
-            </>
+            </div>
           )}
         </div>
 
         {/* Mobile Menu Toggle */}
-        <button
-          className="md:hidden p-2 rounded-xl text-text-dark hover:bg-beige-pale/60"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle Navigation Menu"
-        >
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <LanguageSelector variant="dropdown" />
+          <button
+            className="p-2 rounded-xl text-text-dark hover:bg-beige-pale/60"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Drawer */}
@@ -88,18 +96,19 @@ export const Navbar: React.FC = () => {
               FAQ
             </a>
           </nav>
+
           <div className="pt-4 border-t border-beige-pale flex flex-col gap-2.5">
             {user ? (
               <Button variant="primary" className="w-full" onClick={() => navigate('/dashboard')}>
-                Go to Dashboard
+                {t.common.dashboard}
               </Button>
             ) : (
               <>
                 <Button variant="cream" className="w-full" onClick={() => navigate('/login')}>
-                  Log In
+                  {t.common.login}
                 </Button>
                 <Button variant="primary" className="w-full" onClick={() => navigate('/signup')}>
-                  Create Profile
+                  {t.common.signup}
                 </Button>
               </>
             )}

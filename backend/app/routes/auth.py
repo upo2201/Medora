@@ -18,6 +18,16 @@ def register():
     last_name = (data.get("last_name") or "").strip()
     full_name = f"{first_name} {last_name}".strip() or data.get("full_name", "").strip()
     emergency_notification_email = (data.get("emergency_notification_email") or "").strip().lower()
+    
+    preferred_language = (data.get("preferred_language") or "en").strip().lower()
+    if preferred_language not in ("en", "bn", "hi"):
+        preferred_language = "en"
+
+    emergency_second_language = (data.get("emergency_second_language") or "").strip().lower()
+    if emergency_second_language not in ("bn", "hi"):
+        emergency_second_language = None
+
+    full_name_secondary = (data.get("full_name_secondary") or "").strip() or None
 
     if not email or "@" not in email:
         return jsonify({"error": "Please provide a valid account email address"}), 400
@@ -50,18 +60,20 @@ def register():
                 (user_id, email, pw_hash, full_name, now, now)
             )
             
-            # Create initial medical profile with mandatory emergency notification email (no verification required)
+            # Create initial medical profile with mandatory emergency notification email & language preferences
             cursor.execute(
                 """INSERT INTO medical_profiles 
                    (id, user_id, full_name, age, blood_group, medical_conditions, allergies, no_known_allergies, 
                     current_medications, emergency_contact_name, emergency_contact_relationship, emergency_contact_phone, 
                     emergency_contact_email, emergency_notification_email, emergency_email_verified,
                     emergency_email_verification_code, emergency_email_verification_token, emergency_email_verification_sent_at,
+                    preferred_language, emergency_second_language, full_name_secondary, emergency_contact_name_secondary,
                     created_at, updated_at)
-                   VALUES (?, ?, ?, ?, ?, '[]', '[]', 0, '[]', '', '', '', ?, ?, 1, NULL, NULL, NULL, ?, ?)""",
+                   VALUES (?, ?, ?, ?, ?, '[]', '[]', 0, '[]', '', '', '', ?, ?, 1, NULL, NULL, NULL, ?, ?, ?, NULL, ?, ?)""",
                 (
                     profile_id, user_id, full_name, None, None,
                     emergency_notification_email, emergency_notification_email,
+                    preferred_language, emergency_second_language, full_name_secondary,
                     now, now
                 )
             )
@@ -94,7 +106,9 @@ def register():
             "user": {
                 "id": user_id,
                 "email": email,
-                "full_name": full_name
+                "full_name": full_name,
+                "preferred_language": preferred_language,
+                "emergency_second_language": emergency_second_language
             }
         }), 201
 
@@ -128,23 +142,34 @@ def login():
             algorithm="HS256"
         )
 
+        # Fetch language preferences from medical profile
+        cursor.execute("SELECT preferred_language, emergency_second_language FROM medical_profiles WHERE user_id = ?", (user["id"],))
+        mp = cursor.fetchone()
+        pref_lang = mp["preferred_language"] if mp and "preferred_language" in mp.keys() else "en"
+        sec_lang = mp["emergency_second_language"] if mp and "emergency_second_language" in mp.keys() else None
+
         return jsonify({
             "token": token,
             "user": {
                 "id": user["id"],
                 "email": user["email"],
-                "full_name": user["full_name"]
+                "full_name": user["full_name"],
+                "preferred_language": pref_lang,
+                "emergency_second_language": sec_lang
             }
         }), 200
 
 @auth_bp.route("/me", methods=["GET"])
 @token_required
 def me():
-    user = g.current_user
+    user = dict(g.current_user)
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT id FROM medical_profiles WHERE user_id = ?", (user["id"],))
+        cursor.execute("SELECT id, preferred_language, emergency_second_language FROM medical_profiles WHERE user_id = ?", (user["id"],))
         profile = cursor.fetchone()
+        if profile:
+            user["preferred_language"] = profile["preferred_language"] if "preferred_language" in profile.keys() else "en"
+            user["emergency_second_language"] = profile["emergency_second_language"] if "emergency_second_language" in profile.keys() else None
         
     return jsonify({
         "user": user,

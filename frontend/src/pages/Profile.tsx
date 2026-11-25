@@ -9,7 +9,9 @@ import {
   Phone,
   AlertCircle,
   Eye,
-  Mail
+  Mail,
+  Languages,
+  ShieldCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
@@ -17,17 +19,22 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { useToast } from '../components/ui/Toast';
+import { useLanguage } from '../contexts/LanguageContext';
 import { api } from '../services/api';
-import { MedicalProfile, EmergencyVisibility, MedicationItem } from '../types';
+import { MedicalProfile, EmergencyVisibility, MedicationItem, Language } from '../types';
 
 export const Profile: React.FC = () => {
   const { success, error: toastError } = useToast();
+  const { t, language, setLanguage } = useLanguage();
   const [activeTab, setActiveTab] = useState<'basic' | 'conditions' | 'allergies' | 'medications' | 'contact' | 'visibility'>('basic');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // Form State
   const [fullName, setFullName] = useState('');
+  const [fullNameSecondary, setFullNameSecondary] = useState('');
+  const [preferredLang, setPreferredLang] = useState<Language>('en');
+  const [emergencySecondLang, setEmergencySecondLang] = useState<'none' | Language>('none');
   const [age, setAge] = useState<string>('');
   const [bloodGroup, setBloodGroup] = useState<string>('');
   const [conditions, setConditions] = useState<string[]>([]);
@@ -42,6 +49,7 @@ export const Profile: React.FC = () => {
   const [doctorName, setDoctorName] = useState('');
   const [doctorContact, setDoctorContact] = useState('');
   const [ecName, setEcName] = useState('');
+  const [ecNameSecondary, setEcNameSecondary] = useState('');
   const [ecRel, setEcRel] = useState('');
   const [ecPhone, setEcPhone] = useState('');
   const [ecEmail, setEcEmail] = useState('');
@@ -64,6 +72,9 @@ export const Profile: React.FC = () => {
       const data = await api.getProfile();
       const p = data.profile;
       setFullName(p.full_name || '');
+      setFullNameSecondary(p.full_name_secondary || '');
+      setPreferredLang((p.preferred_language as Language) || 'en');
+      setEmergencySecondLang((p.emergency_second_language as Language) || 'none');
       setAge(p.age !== null ? String(p.age) : '');
       setBloodGroup(p.blood_group || '');
       setConditions(p.medical_conditions || []);
@@ -73,6 +84,7 @@ export const Profile: React.FC = () => {
       setDoctorName(p.doctor_name || '');
       setDoctorContact(p.doctor_contact || '');
       setEcName(p.emergency_contact_name || '');
+      setEcNameSecondary(p.emergency_contact_name_secondary || '');
       setEcRel(p.emergency_contact_relationship || '');
       setEcPhone(p.emergency_contact_phone || '');
       setEcEmail(p.emergency_notification_email || p.emergency_contact_email || '');
@@ -104,6 +116,9 @@ export const Profile: React.FC = () => {
     try {
       await api.updateProfile({
         full_name: fullName.trim(),
+        full_name_secondary: fullNameSecondary.trim() || null,
+        preferred_language: preferredLang,
+        emergency_second_language: emergencySecondLang === 'none' ? null : emergencySecondLang,
         age: age ? parseInt(age, 10) : null,
         blood_group: bloodGroup || null,
         medical_conditions: conditions,
@@ -113,6 +128,7 @@ export const Profile: React.FC = () => {
         doctor_name: doctorName.trim() || null,
         doctor_contact: doctorContact.trim() || null,
         emergency_contact_name: ecName.trim(),
+        emergency_contact_name_secondary: ecNameSecondary.trim() || null,
         emergency_contact_relationship: ecRel.trim(),
         emergency_contact_phone: ecPhone.trim(),
         emergency_contact_email: ecEmail.trim() || null,
@@ -121,12 +137,17 @@ export const Profile: React.FC = () => {
 
       await api.updateVisibility(visibility);
 
+      // Synchronize language context if preferred language was modified
+      if (preferredLang !== language) {
+        setLanguage(preferredLang);
+      }
+
       confetti({
         particleCount: 50,
         spread: 60,
         origin: { y: 0.7 }
       });
-      success('Your medical profile and emergency settings have been saved!');
+      success(t.profile.saveSuccess);
       fetchProfile();
     } catch (err: any) {
       toastError(err.message || 'Failed to save profile changes');
@@ -205,19 +226,19 @@ export const Profile: React.FC = () => {
     return (
       <DashboardLayout>
         <div className="py-20 text-center text-text-muted text-sm font-medium">
-          Loading medical profile...
+          {t.common.loading}...
         </div>
       </DashboardLayout>
     );
   }
 
   const tabs = [
-    { id: 'basic', label: 'Basic Information', icon: User },
-    { id: 'conditions', label: 'Medical Conditions', icon: HeartPulse },
-    { id: 'allergies', label: 'Allergies', icon: AlertCircle },
-    { id: 'medications', label: 'Medications', icon: Pill },
-    { id: 'contact', label: 'Emergency Contact', icon: Phone },
-    { id: 'visibility', label: 'Visibility Privacy', icon: Eye },
+    { id: 'basic', label: t.profile.tabBasic, icon: User },
+    { id: 'conditions', label: t.profile.tabConditions, icon: HeartPulse },
+    { id: 'allergies', label: t.profile.tabAllergies, icon: AlertCircle },
+    { id: 'medications', label: t.profile.tabMedications, icon: Pill },
+    { id: 'contact', label: t.profile.tabContact, icon: Phone },
+    { id: 'visibility', label: t.profile.tabVisibility, icon: Eye },
   ];
 
   return (
@@ -227,10 +248,10 @@ export const Profile: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-beige-pale/60">
           <div>
             <h1 className="font-serif text-3xl font-bold text-burgundy-deep tracking-tight">
-              Edit Medical Profile
+              {t.profile.pageTitle}
             </h1>
             <p className="text-xs text-text-muted mt-1">
-              Maintain accurate information for emergency first responders and medical staff.
+              {t.profile.pageSubtitle}
             </p>
           </div>
 
@@ -241,7 +262,7 @@ export const Profile: React.FC = () => {
             loading={saving}
             icon={<Save className="w-4 h-4" />}
           >
-            Save Changes
+            {t.profile.saveChanges}
           </Button>
         </div>
 
@@ -267,17 +288,17 @@ export const Profile: React.FC = () => {
           })}
         </div>
 
-        {/* --- SECTION 1: BASIC INFORMATION --- */}
+        {/* --- SECTION 1: BASIC INFORMATION & LANGUAGE PREFERENCES --- */}
         {activeTab === 'basic' && (
           <Card variant="white" className="p-6 sm:p-8 space-y-6">
             <div className="border-b border-beige-pale/60 pb-3">
-              <h3 className="font-serif text-xl font-bold text-text-dark">Basic Information</h3>
-              <p className="text-xs text-text-muted">Personal identity and blood group.</p>
+              <h3 className="font-serif text-xl font-bold text-text-dark">{t.profile.tabBasic}</h3>
+              <p className="text-xs text-text-muted">Personal identity, scripts, and language settings.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
-                label="Full Name *"
+                label="Full Name (English) *"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="e.g. Ananya Sen"
@@ -285,7 +306,47 @@ export const Profile: React.FC = () => {
               />
 
               <Input
-                label="Age (Years)"
+                label="Full Name in Secondary Script (বাংলা / हिंदी / Regional)"
+                value={fullNameSecondary}
+                onChange={(e) => setFullNameSecondary(e.target.value)}
+                placeholder="e.g. অনন্যা সেন or अनन्या सेन"
+              />
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-dark/80">
+                  {t.common.preferredLanguage}
+                </label>
+                <select
+                  value={preferredLang}
+                  onChange={(e) => setPreferredLang(e.target.value as Language)}
+                  className="w-full bg-white border border-beige-pale rounded-xl px-4 py-2.5 text-sm text-text-dark focus:outline-none focus:border-burgundy focus:ring-2 focus:ring-burgundy/15"
+                >
+                  <option value="en">English (Default)</option>
+                  <option value="bn">বাংলা (Bengali)</option>
+                  <option value="hi">हिंदी (Hindi)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-dark/80">
+                  {t.common.emergencySecondLanguage}
+                </label>
+                <select
+                  value={emergencySecondLang}
+                  onChange={(e) => setEmergencySecondLang(e.target.value as 'none' | Language)}
+                  className="w-full bg-white border border-beige-pale rounded-xl px-4 py-2.5 text-sm text-text-dark focus:outline-none focus:border-burgundy focus:ring-2 focus:ring-burgundy/15"
+                >
+                  <option value="none">{t.common.secondLanguageNone}</option>
+                  <option value="bn">বাংলা (Bengali)</option>
+                  <option value="hi">हिंदी (Hindi)</option>
+                </select>
+                <p className="text-[11px] text-text-muted">
+                  {t.common.secondLanguageNotice}
+                </p>
+              </div>
+
+              <Input
+                label={t.profile.age}
                 type="number"
                 min="0"
                 max="130"
@@ -296,14 +357,14 @@ export const Profile: React.FC = () => {
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-dark/80">
-                  Blood Group
+                  {t.profile.bloodGroup}
                 </label>
                 <select
                   value={bloodGroup}
                   onChange={(e) => setBloodGroup(e.target.value)}
                   className="w-full bg-white border border-beige-pale rounded-xl px-4 py-2.5 text-sm text-text-dark focus:outline-none focus:border-burgundy focus:ring-2 focus:ring-burgundy/15"
                 >
-                  <option value="">Select blood group (optional)</option>
+                  <option value="">{t.profile.selectBloodGroup}</option>
                   <option value="A+">A+ (A Positive)</option>
                   <option value="A-">A- (A Negative)</option>
                   <option value="B+">B+ (B Positive)</option>
@@ -323,9 +384,9 @@ export const Profile: React.FC = () => {
         {activeTab === 'conditions' && (
           <Card variant="white" className="p-6 sm:p-8 space-y-6">
             <div className="border-b border-beige-pale/60 pb-3">
-              <h3 className="font-serif text-xl font-bold text-text-dark">Medical Conditions</h3>
+              <h3 className="font-serif text-xl font-bold text-text-dark">{t.profile.conditionsTitle}</h3>
               <p className="text-xs text-text-muted">
-                Ongoing health diagnoses (e.g. Hypertension, Type 2 Diabetes, Asthma, Cardiac Stent).
+                {t.profile.conditionsSubtitle}
               </p>
             </div>
 
@@ -335,17 +396,17 @@ export const Profile: React.FC = () => {
                 value={newCondition}
                 onChange={(e) => setNewCondition(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCondition())}
-                placeholder="Type a condition (e.g. Hypertension)..."
+                placeholder={t.profile.addConditionPlaceholder}
                 className="flex-1 bg-white border border-beige-pale rounded-xl px-4 py-2.5 text-sm text-text-dark placeholder:text-text-light focus:outline-none focus:border-burgundy focus:ring-2 focus:ring-burgundy/15"
               />
               <Button variant="secondary" onClick={addCondition} icon={<Plus className="w-4 h-4" />}>
-                Add
+                {t.profile.addConditionButton}
               </Button>
             </div>
 
             <div className="space-y-2">
               {conditions.length === 0 ? (
-                <p className="text-xs text-text-muted italic py-4">No conditions listed yet.</p>
+                <p className="text-xs text-text-muted italic py-4">{t.profile.noConditionsAdded}</p>
               ) : (
                 <div className="flex flex-wrap gap-2.5 pt-2">
                   {conditions.map((cond, idx) => (
@@ -372,16 +433,16 @@ export const Profile: React.FC = () => {
         {activeTab === 'allergies' && (
           <Card variant="white" className="p-6 sm:p-8 space-y-6">
             <div className="border-b border-beige-pale/60 pb-3">
-              <h3 className="font-serif text-xl font-bold text-text-dark">Known Allergies</h3>
+              <h3 className="font-serif text-xl font-bold text-text-dark">{t.profile.allergiesTitle}</h3>
               <p className="text-xs text-text-muted">
-                Critical drug, food, or environmental allergies (e.g. Penicillin, Sulfa drugs, Peanuts).
+                {t.profile.allergiesSubtitle}
               </p>
             </div>
 
             {/* Explicit "No Known Allergies" toggle */}
             <div className="p-4 rounded-xl bg-beige-pale/40 border border-beige-subtle flex items-center justify-between">
               <div className="space-y-0.5">
-                <span className="text-xs font-bold text-text-dark">No Known Allergies</span>
+                <span className="text-xs font-bold text-text-dark">{t.profile.noKnownAllergiesCheckbox}</span>
                 <p className="text-[11px] text-text-muted">
                   Confirm explicitly that the individual has no known allergies.
                 </p>
@@ -405,11 +466,11 @@ export const Profile: React.FC = () => {
                     value={newAllergy}
                     onChange={(e) => setNewAllergy(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addAllergy())}
-                    placeholder="Type an allergy (e.g. Penicillin)..."
+                    placeholder={t.profile.addAllergyPlaceholder}
                     className="flex-1 bg-white border border-beige-pale rounded-xl px-4 py-2.5 text-sm text-text-dark placeholder:text-text-light focus:outline-none focus:border-burgundy focus:ring-2 focus:ring-burgundy/15"
                   />
                   <Button variant="secondary" onClick={addAllergy} icon={<Plus className="w-4 h-4" />}>
-                    Add
+                    {t.profile.addAllergyButton}
                   </Button>
                 </div>
 
@@ -446,9 +507,9 @@ export const Profile: React.FC = () => {
         {activeTab === 'medications' && (
           <Card variant="white" className="p-6 sm:p-8 space-y-6">
             <div className="border-b border-beige-pale/60 pb-3">
-              <h3 className="font-serif text-xl font-bold text-text-dark">Current Medications</h3>
+              <h3 className="font-serif text-xl font-bold text-text-dark">{t.profile.medicationsTitle}</h3>
               <p className="text-xs text-text-muted">
-                Prescriptions and regular dosages that attending doctors need to know.
+                {t.profile.medicationsSubtitle}
               </p>
             </div>
 
@@ -457,14 +518,14 @@ export const Profile: React.FC = () => {
                 type="text"
                 value={newMedName}
                 onChange={(e) => setNewMedName(e.target.value)}
-                placeholder="Medication name (e.g. Metformin)"
+                placeholder={t.profile.medName}
                 className="bg-white border border-beige-pale rounded-xl px-4 py-2.5 text-sm text-text-dark placeholder:text-text-light focus:outline-none focus:border-burgundy"
               />
               <input
                 type="text"
                 value={newMedDosage}
                 onChange={(e) => setNewMedDosage(e.target.value)}
-                placeholder="Dosage (e.g. 500 mg)"
+                placeholder={t.profile.medDosage}
                 className="bg-white border border-beige-pale rounded-xl px-4 py-2.5 text-sm text-text-dark placeholder:text-text-light focus:outline-none focus:border-burgundy"
               />
               <div className="flex gap-2">
@@ -472,11 +533,11 @@ export const Profile: React.FC = () => {
                   type="text"
                   value={newMedFreq}
                   onChange={(e) => setNewMedFreq(e.target.value)}
-                  placeholder="Frequency (e.g. Twice daily)"
+                  placeholder={t.profile.medFrequency}
                   className="flex-1 bg-white border border-beige-pale rounded-xl px-4 py-2.5 text-sm text-text-dark placeholder:text-text-light focus:outline-none focus:border-burgundy"
                 />
                 <Button variant="secondary" onClick={addMedication} icon={<Plus className="w-4 h-4" />}>
-                  Add
+                  {t.profile.addMedication}
                 </Button>
               </div>
             </div>
@@ -484,7 +545,7 @@ export const Profile: React.FC = () => {
             {/* List of medications */}
             <div className="space-y-2 pt-2">
               {medications.length === 0 ? (
-                <p className="text-xs text-text-muted italic py-4">No medications listed.</p>
+                <p className="text-xs text-text-muted italic py-4">{t.profile.noMedicationsAdded}</p>
               ) : (
                 <div className="divide-y divide-beige-pale/60 border border-beige-pale rounded-2xl overflow-hidden bg-cream-warm/40">
                   {medications.map((med, idx) => (
@@ -492,8 +553,8 @@ export const Profile: React.FC = () => {
                       <div>
                         <p className="font-bold text-text-dark text-sm">{med.name}</p>
                         <p className="text-text-muted mt-0.5">
-                          Dosage: <span className="font-semibold text-text-dark">{med.dosage}</span>
-                          {med.frequency && ` • Frequency: ${med.frequency}`}
+                          {t.profile.medDosage}: <span className="font-semibold text-text-dark">{med.dosage}</span>
+                          {med.frequency && ` • ${t.profile.medFrequency}: ${med.frequency}`}
                         </p>
                       </div>
                       <button
@@ -510,17 +571,17 @@ export const Profile: React.FC = () => {
 
             <div className="pt-6 border-t border-beige-pale/60 space-y-4">
               <h4 className="font-serif text-base font-bold text-burgundy-deep">
-                Primary Attending Physician (Optional)
+                {t.profile.doctorDetails}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
-                  label="Doctor Name"
+                  label={t.profile.doctorName}
                   value={doctorName}
                   onChange={(e) => setDoctorName(e.target.value)}
                   placeholder="e.g. Dr. R. Chatterjee"
                 />
                 <Input
-                  label="Doctor Contact Number"
+                  label={t.profile.doctorContact}
                   value={doctorContact}
                   onChange={(e) => setDoctorContact(e.target.value)}
                   placeholder="e.g. +91 98765 12345"
@@ -534,15 +595,15 @@ export const Profile: React.FC = () => {
         {activeTab === 'contact' && (
           <Card variant="white" className="p-6 sm:p-8 space-y-6">
             <div className="border-b border-beige-pale/60 pb-3">
-              <h3 className="font-serif text-xl font-bold text-text-dark">Emergency Contact</h3>
+              <h3 className="font-serif text-xl font-bold text-text-dark">{t.profile.emergencyContactTitle}</h3>
               <p className="text-xs text-text-muted">
                 The primary person to be dialed immediately when somebody scans your emergency QR code.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <Input
-                label="Contact Full Name *"
+                label={`${t.profile.contactName} (English) *`}
                 value={ecName}
                 onChange={(e) => setEcName(e.target.value)}
                 placeholder="e.g. Ritu Sen"
@@ -550,7 +611,14 @@ export const Profile: React.FC = () => {
               />
 
               <Input
-                label="Relationship *"
+                label="Contact Name in Secondary Script (বাংলা / हिंदी)"
+                value={ecNameSecondary}
+                onChange={(e) => setEcNameSecondary(e.target.value)}
+                placeholder="e.g. রিতু সেন or रितु सेन"
+              />
+
+              <Input
+                label={`${t.profile.contactRelationship} *`}
                 value={ecRel}
                 onChange={(e) => setEcRel(e.target.value)}
                 placeholder="e.g. Daughter, Spouse, Son"
@@ -558,7 +626,7 @@ export const Profile: React.FC = () => {
               />
 
               <Input
-                label="Phone Number *"
+                label={`${t.profile.contactPhone} *`}
                 value={ecPhone}
                 onChange={(e) => setEcPhone(e.target.value)}
                 placeholder="e.g. +91 98765 43210"
@@ -602,7 +670,7 @@ export const Profile: React.FC = () => {
                   />
                 </div>
                 <p className="text-[11px] text-text-muted">
-                  Separate from your account login email. Belongs to you, a family member, or a primary caregiver. Saves automatically when you click "Save Changes".
+                  Separate from your account login email. Belongs to you, a family member, or a primary caregiver. Saves automatically when you click "{t.profile.saveChanges}".
                 </p>
               </div>
 
@@ -626,22 +694,22 @@ export const Profile: React.FC = () => {
         {activeTab === 'visibility' && (
           <Card variant="white" className="p-6 sm:p-8 space-y-6">
             <div className="border-b border-beige-pale/60 pb-3">
-              <h3 className="font-serif text-xl font-bold text-text-dark">Emergency Visibility Controls</h3>
+              <h3 className="font-serif text-xl font-bold text-text-dark">{t.profile.visibilityTitle}</h3>
               <p className="text-xs text-text-muted">
-                Explicit toggles determining what appears on the public emergency scan webpage.
+                {t.profile.visibilitySubtitle}
               </p>
             </div>
 
             <div className="space-y-4">
               {[
-                { key: 'show_name', label: 'Show Patient Full Name', desc: 'Allows first responders to confirm who they are treating.' },
-                { key: 'show_age', label: 'Show Age', desc: 'Provides clinical age context for emergency dosages.' },
-                { key: 'show_blood_group', label: 'Show Blood Group', desc: 'Vital for rapid transfusion and trauma response.' },
-                { key: 'show_allergies', label: 'Show Known Allergies', desc: 'Critical to prevent fatal medication errors.' },
-                { key: 'show_medications', label: 'Show Current Medications', desc: 'Informs doctors of potential drug interactions.' },
-                { key: 'show_conditions', label: 'Show Medical Conditions', desc: 'Highlights preexisting heart conditions, diabetes, etc.' },
-                { key: 'show_emergency_contact', label: 'Show Emergency Contact & Call Button', desc: 'Allows the scanner to place an immediate call.' },
-                { key: 'show_doctor_details', label: 'Show Attending Physician', desc: 'Optional: displays your primary doctor contact.' },
+                { key: 'show_name', label: t.profile.showName, desc: 'Allows first responders to confirm who they are treating.' },
+                { key: 'show_age', label: t.profile.showAge, desc: 'Provides clinical age context for emergency dosages.' },
+                { key: 'show_blood_group', label: t.profile.showBloodGroup, desc: 'Vital for rapid transfusion and trauma response.' },
+                { key: 'show_allergies', label: t.profile.showAllergies, desc: 'Critical to prevent fatal medication errors.' },
+                { key: 'show_medications', label: t.profile.showMedications, desc: 'Informs doctors of potential drug interactions.' },
+                { key: 'show_conditions', label: t.profile.showConditions, desc: 'Highlights preexisting heart conditions, diabetes, etc.' },
+                { key: 'show_emergency_contact', label: t.profile.showContact, desc: 'Allows the scanner to place an immediate call.' },
+                { key: 'show_doctor_details', label: t.profile.showDoctor, desc: 'Optional: displays your primary doctor contact.' },
               ].map((item) => (
                 <div
                   key={item.key}
@@ -669,4 +737,3 @@ export const Profile: React.FC = () => {
     </DashboardLayout>
   );
 };
-

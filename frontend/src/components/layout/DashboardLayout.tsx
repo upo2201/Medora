@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X, Bell } from 'lucide-react';
 import { Sidebar } from './Sidebar';
+import { LanguageSelector } from '../ui/LanguageSelector';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { api } from '../../services/api';
 
 export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,12 +53,15 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
             </button>
             <div className="hidden sm:block">
               <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-                Emergency Information Management
+                {t.common.appName} • {t.common.appTagline}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Header Language Switcher */}
+            <LanguageSelector variant="dropdown" />
+
             {/* Notification bell */}
             <button
               onClick={() => navigate('/notifications')}
@@ -89,4 +95,3 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
     </div>
   );
 };
-

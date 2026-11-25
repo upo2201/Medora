@@ -19,11 +19,13 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
+import { useLanguage } from '../contexts/LanguageContext';
 import { api } from '../services/api';
 import { QRToken } from '../types';
 
 export const QRManagement: React.FC = () => {
   const { success, error: toastError, info } = useToast();
+  const { t } = useLanguage();
   const [qrToken, setQrToken] = useState<QRToken | null>(null);
   const [patientName, setPatientName] = useState('Patient');
   const [rawToken, setRawToken] = useState<string>('');
@@ -135,14 +137,14 @@ export const QRManagement: React.FC = () => {
   const copyEmergencyLink = () => {
     if (!emergencyUrl) return;
     navigator.clipboard.writeText(emergencyUrl);
-    info('Emergency link copied to clipboard!');
+    info(t.qr.copiedLink);
   };
 
   if (loading) {
     return (
       <DashboardLayout>
         <div className="py-20 text-center text-text-muted text-sm font-medium">
-          Loading QR code status...
+          {t.common.loading}...
         </div>
       </DashboardLayout>
     );
@@ -155,21 +157,21 @@ export const QRManagement: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-beige-pale/60">
           <div>
             <h1 className="font-serif text-3xl font-bold text-burgundy-deep tracking-tight">
-              Emergency QR Code
+              {t.qr.pageTitle}
             </h1>
             <p className="text-xs text-text-muted mt-1">
-              Your unique, cryptographically hashed access link for emergency medical assistance.
+              {t.qr.pageSubtitle}
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             {isQrActive ? (
-              <Badge variant="active">Active QR</Badge>
+              <Badge variant="active">{t.dashboard.activeStatus} QR</Badge>
             ) : qrToken?.status === 'revoked' ? (
-              <Badge variant="revoked">Deactivated</Badge>
+              <Badge variant="revoked">{t.dashboard.revokedStatus}</Badge>
             ) : (
               <span className="px-3 py-1 rounded-full bg-beige-pale text-text-muted text-xs font-semibold border border-beige-subtle">
-                Not Generated
+                {t.dashboard.notGeneratedStatus}
               </span>
             )}
           </div>
@@ -185,7 +187,7 @@ export const QRManagement: React.FC = () => {
 
               <div className="space-y-2">
                 <h2 className="font-serif text-2xl sm:text-3xl font-bold text-burgundy-deep">
-                  No Emergency QR Generated Yet
+                  {t.dashboard.notGeneratedStatus}
                 </h2>
                 <p className="text-xs sm:text-sm text-text-muted max-w-md mx-auto leading-relaxed">
                   Generate a unique, cryptographically secure QR code linked to your emergency medical profile. Once created, first responders and bystanders can scan it from any smartphone to view your permitted emergency details.
@@ -235,7 +237,7 @@ export const QRManagement: React.FC = () => {
                   loading={actionLoading}
                   icon={<QrCode className="w-5 h-5" />}
                 >
-                  Generate QR Code
+                  {t.qr.generateQrButton}
                 </Button>
               </div>
             </Card>
@@ -256,7 +258,7 @@ export const QRManagement: React.FC = () => {
                         : 'Active emergency profile'}
                     </p>
                   </div>
-                  <Badge variant="active">Active</Badge>
+                  <Badge variant="active">{t.dashboard.activeStatus}</Badge>
                 </div>
 
                 {/* Warning: Public URL Changed Since Generation */}
@@ -322,7 +324,7 @@ export const QRManagement: React.FC = () => {
                     onClick={copyEmergencyLink}
                     icon={<Copy className="w-3.5 h-3.5" />}
                   >
-                    Copy
+                    {t.qr.copyLinkButton}
                   </Button>
                 </div>
 
@@ -334,7 +336,7 @@ export const QRManagement: React.FC = () => {
                     onClick={() => window.open(api.getDownloadQRUrl(rawToken, effectiveBaseUrl), '_blank')}
                     icon={<Download className="w-4 h-4" />}
                   >
-                    Download QR (PNG)
+                    {t.qr.downloadPng}
                   </Button>
 
                   <Button
@@ -343,7 +345,7 @@ export const QRManagement: React.FC = () => {
                     onClick={() => window.open(api.getDownloadCardUrl(rawToken, patientName, effectiveBaseUrl), '_blank')}
                     icon={<Printer className="w-4 h-4 text-burgundy" />}
                   >
-                    Print QR Card & Sticker (PDF)
+                    {t.qr.printPdfCard}
                   </Button>
 
                   <Button
@@ -352,7 +354,7 @@ export const QRManagement: React.FC = () => {
                     onClick={() => setWallpaperModalOpen(true)}
                     icon={<Smartphone className="w-4 h-4 text-burgundy" />}
                   >
-                    Lock-Screen Wallpaper
+                    {t.qr.downloadWallpaper}
                   </Button>
 
                   <Button
@@ -362,7 +364,7 @@ export const QRManagement: React.FC = () => {
                     loading={actionLoading}
                     icon={<RefreshCw className="w-4 h-4" />}
                   >
-                    Regenerate QR
+                    {t.qr.regenerateNotice}
                   </Button>
                 </div>
 
@@ -375,7 +377,7 @@ export const QRManagement: React.FC = () => {
                     onClick={() => setRevokeModalOpen(true)}
                     icon={<ShieldAlert className="w-4 h-4" />}
                   >
-                    Revoke & Deactivate Current QR
+                    {t.qr.revokeQrButton}
                   </Button>
                 </div>
               </Card>
@@ -385,7 +387,7 @@ export const QRManagement: React.FC = () => {
             <div className="lg:col-span-5 space-y-6">
               <Card variant="white" className="p-6 text-center space-y-6">
                 <div className="text-left border-b border-beige-pale/60 pb-3">
-                  <h3 className="font-serif text-lg font-bold text-text-dark">Lock-Screen Preview</h3>
+                  <h3 className="font-serif text-lg font-bold text-text-dark">{t.qr.lockScreenPreview}</h3>
                   <p className="text-xs text-text-muted">
                     How your emergency QR appears on a smartphone lock screen.
                   </p>
@@ -432,12 +434,11 @@ export const QRManagement: React.FC = () => {
                 <div className="text-xs text-text-muted space-y-2 text-left bg-cream-warm/50 p-4 rounded-2xl border border-beige-pale/60">
                   <div className="flex items-center gap-2 text-burgundy font-semibold">
                     <Smartphone className="w-4 h-4" />
-                    <span>How to Use Your QR Code:</span>
+                    <span>{t.qr.howToUseTitle}:</span>
                   </div>
                   <ol className="list-decimal list-inside space-y-1 text-[11px] leading-relaxed pl-1">
-                    <li>Download wallpaper or print our Phone-Back Sticker.</li>
-                    <li>For lock screens: Save to Photos and set as Lock Screen.</li>
-                    <li>For 24/7 access: Attach the printed sticker to the back of your phone or case.</li>
+                    <li>{t.qr.lockScreenInstruction}</li>
+                    <li>{t.qr.walletCardInstruction}</li>
                   </ol>
                 </div>
               </Card>
@@ -449,7 +450,7 @@ export const QRManagement: React.FC = () => {
         <Modal
           isOpen={revokeModalOpen}
           onClose={() => setRevokeModalOpen(false)}
-          title="Revoke Emergency QR Code?"
+          title={t.qr.confirmRevokeTitle}
           description="This action takes effect immediately."
         >
           <div className="space-y-4 text-left">
@@ -459,7 +460,7 @@ export const QRManagement: React.FC = () => {
                 <span>Immediate Access Deactivation</span>
               </div>
               <p className="leading-relaxed text-medical-dark">
-                Anyone who scans this physical card, phone sticker, wallpaper, or link in the future will see a 'QR Code Deactivated' notice. No medical information will ever be exposed.
+                {t.qr.revokeWarning}
               </p>
             </div>
 
@@ -472,14 +473,14 @@ export const QRManagement: React.FC = () => {
                 variant="cream"
                 onClick={() => setRevokeModalOpen(false)}
               >
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button
                 variant="danger"
                 onClick={handleRevoke}
                 loading={actionLoading}
               >
-                Confirm Revocation
+                {t.qr.confirmRevokeTitle}
               </Button>
             </div>
           </div>
@@ -516,7 +517,7 @@ export const QRManagement: React.FC = () => {
                 variant="cream"
                 onClick={() => setWallpaperModalOpen(false)}
               >
-                Close
+                {t.common.close}
               </Button>
               <Button
                 variant="primary"

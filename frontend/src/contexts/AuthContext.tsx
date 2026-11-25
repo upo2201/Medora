@@ -6,7 +6,16 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, pw: string) => Promise<void>;
-  register: (data: { first_name: string; last_name: string; email: string; password: string; emergency_notification_email: string }) => Promise<void>;
+  register: (data: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+    emergency_notification_email: string;
+    preferred_language?: string;
+    emergency_second_language?: string | null;
+    full_name_secondary?: string | null;
+  }) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -44,7 +53,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(data.user);
   };
 
-  const register = async (data: { first_name: string; last_name: string; email: string; password: string; emergency_notification_email: string }) => {
+  const register = async (data: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+    emergency_notification_email: string;
+    preferred_language?: string;
+    emergency_second_language?: string | null;
+    full_name_secondary?: string | null;
+  }) => {
     const res = await api.register(data);
     setUser(res.user);
   };

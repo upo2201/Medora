@@ -12,11 +12,13 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { useToast } from '../components/ui/Toast';
+import { useLanguage } from '../contexts/LanguageContext';
 import { api } from '../services/api';
 import { NotificationItem } from '../types';
 
 export const Notifications: React.FC = () => {
   const { success, error: toastError } = useToast();
+  const { t } = useLanguage();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -43,7 +45,7 @@ export const Notifications: React.FC = () => {
     try {
       const res = await api.sendTestEmail();
       if (res.success) {
-        success(`Test alert email dispatched to ${res.recipient}! (${res.mode === 'smtp' ? 'Sent via SMTP' : 'Simulation mode'})`);
+        success(`${t.notifications.testAlertSent}: ${res.recipient}!`);
         fetchNotifs();
       } else {
         toastError(res.detail || 'Email delivery failed');
@@ -79,10 +81,10 @@ export const Notifications: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-beige-pale/60">
           <div>
             <h1 className="font-serif text-3xl font-bold text-burgundy-deep tracking-tight">
-              Emergency Notifications
+              {t.notifications.pageTitle}
             </h1>
             <p className="text-xs text-text-muted mt-1">
-              Safety alerts and email notifications dispatched whenever your emergency QR is accessed.
+              {t.notifications.pageSubtitle}
             </p>
           </div>
 
@@ -94,7 +96,7 @@ export const Notifications: React.FC = () => {
               loading={sendingTest}
               icon={<Mail className="w-4 h-4 text-burgundy" />}
             >
-              Send Test Alert Email
+              {t.notifications.sendTestAlert}
             </Button>
             {unreadCount > 0 && (
               <Button
@@ -113,13 +115,13 @@ export const Notifications: React.FC = () => {
         <Card variant="white" className="p-6">
           {loading ? (
             <div className="py-12 text-center text-text-muted text-xs">
-              Loading notifications...
+              {t.common.loading}...
             </div>
           ) : notifications.length === 0 ? (
             <div className="py-12 text-center text-text-muted text-xs space-y-2">
               <Bell className="w-8 h-8 mx-auto text-text-muted/40" />
-              <p className="font-semibold text-text-dark">No notifications yet</p>
-              <p>Whenever your emergency QR code is scanned, an event log will appear here.</p>
+              <p className="font-semibold text-text-dark">{t.notifications.noNotifications}</p>
+              <p>{t.notifications.allCaughtUp}</p>
             </div>
           ) : (
             <div className="divide-y divide-beige-pale/60 space-y-2">
@@ -177,7 +179,7 @@ export const Notifications: React.FC = () => {
                       <div className="flex items-center gap-2 text-[10px] text-text-muted pt-0.5">
                         <Calendar className="w-3 h-3" />
                         <span>{new Date(notif.created_at).toLocaleString()}</span>
-                        <span>• Target: {notif.recipient}</span>
+                        <span>• {t.notifications.alertRecipient}: {notif.recipient}</span>
                       </div>
                     </div>
                   </div>
@@ -204,4 +206,3 @@ export const Notifications: React.FC = () => {
     </DashboardLayout>
   );
 };
-

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { ToastProvider } from './components/ui/Toast';
 
 // Pages
@@ -40,8 +41,9 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <ToastProvider>
-          <Routes>
+        <LanguageProvider>
+          <ToastProvider>
+            <Routes>
             {/* Public Landing & Auth Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -105,8 +107,9 @@ export const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ToastProvider>
-      </AuthProvider>
-    </BrowserRouter>
+      </LanguageProvider>
+    </AuthProvider>
+  </BrowserRouter>
   );
 };
 

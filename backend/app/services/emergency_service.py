@@ -110,14 +110,18 @@ def get_public_emergency_profile(raw_token: str, user_agent_str: str):
         }
         
         # Build filtered public payload
+        sec_lang = med_profile["emergency_second_language"] if "emergency_second_language" in med_profile.keys() else None
         public_data = {
             "status": "active",
             "last_updated": med_profile["updated_at"],
-            "scan_timestamp": now_iso
+            "scan_timestamp": now_iso,
+            "emergency_second_language": sec_lang
         }
         
         if vis_dict["show_name"]:
             public_data["full_name"] = med_profile["full_name"]
+            if "full_name_secondary" in med_profile.keys() and med_profile["full_name_secondary"]:
+                public_data["full_name_secondary"] = med_profile["full_name_secondary"]
             
         if vis_dict["show_age"] and med_profile["age"] is not None:
             public_data["age"] = med_profile["age"]
@@ -149,11 +153,14 @@ def get_public_emergency_profile(raw_token: str, user_agent_str: str):
             public_data["doctor_contact"] = med_profile["doctor_contact"] or None
             
         if vis_dict["show_emergency_contact"]:
-            public_data["emergency_contact"] = {
+            ec_payload = {
                 "name": med_profile["emergency_contact_name"],
                 "relationship": med_profile["emergency_contact_relationship"],
                 "phone": med_profile["emergency_contact_phone"]
             }
+            if "emergency_contact_name_secondary" in med_profile.keys() and med_profile["emergency_contact_name_secondary"]:
+                ec_payload["name_secondary"] = med_profile["emergency_contact_name_secondary"]
+            public_data["emergency_contact"] = ec_payload
             
         # Update token last_accessed_at
         cursor.execute("UPDATE qr_tokens SET last_accessed_at = ? WHERE id = ?", (now_iso, token_id))

@@ -13,11 +13,12 @@ import {
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
+import { useLanguage } from '../contexts/LanguageContext';
 import { api } from '../services/api';
 import { AccessLog } from '../types';
 
 export const AccessLogs: React.FC = () => {
+  const { t } = useLanguage();
   const [logs, setLogs] = useState<AccessLog[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
@@ -58,15 +59,15 @@ export const AccessLogs: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-beige-pale/60">
           <div>
             <h1 className="font-serif text-3xl font-bold text-burgundy-deep tracking-tight">
-              Access History & Logs
+              {t.logs.pageTitle}
             </h1>
             <p className="text-xs text-text-muted mt-1">
-              A transparent, privacy-conscious audit trail of every time your emergency QR was scanned.
+              {t.logs.pageSubtitle}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-cream-warm border border-beige-pale text-text-dark">
-              Total Scans: <strong className="text-burgundy">{total}</strong>
+              {t.logs.totalScansLogged}: <strong className="text-burgundy">{total}</strong>
             </span>
           </div>
         </div>
@@ -75,7 +76,7 @@ export const AccessLogs: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {deviceBreakdown.length === 0 ? (
             <div className="col-span-4 p-4 rounded-xl bg-white border border-beige-pale text-xs text-text-muted">
-              No scan activity recorded yet.
+              {t.logs.noLogsYet}
             </div>
           ) : (
             deviceBreakdown.map((item, idx) => (
@@ -105,24 +106,24 @@ export const AccessLogs: React.FC = () => {
             <table className="w-full text-left text-xs">
               <thead className="bg-cream-warm/70 border-b border-beige-pale text-text-muted uppercase tracking-wider text-[10px]">
                 <tr>
-                  <th className="py-3.5 px-6 font-bold">Date & Time</th>
-                  <th className="py-3.5 px-6 font-bold">Device Category</th>
-                  <th className="py-3.5 px-6 font-bold">Browser</th>
-                  <th className="py-3.5 px-6 font-bold">Access Status</th>
-                  <th className="py-3.5 px-6 font-bold">Notification</th>
+                  <th className="py-3.5 px-6 font-bold">{t.logs.timestamp}</th>
+                  <th className="py-3.5 px-6 font-bold">{t.logs.deviceCategory}</th>
+                  <th className="py-3.5 px-6 font-bold">{t.logs.browserFamily}</th>
+                  <th className="py-3.5 px-6 font-bold">{t.logs.status}</th>
+                  <th className="py-3.5 px-6 font-bold">Alert Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-beige-pale/60 text-text-dark">
                 {loading ? (
                   <tr>
                     <td colSpan={5} className="py-12 text-center text-text-muted">
-                      Loading access logs...
+                      {t.common.loading}...
                     </td>
                   </tr>
                 ) : logs.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-12 text-center text-text-muted">
-                      No emergency access scans have been logged yet.
+                      {t.logs.noLogsYet}
                     </td>
                   </tr>
                 ) : (
@@ -153,19 +154,19 @@ export const AccessLogs: React.FC = () => {
                         {log.access_status === 'success' ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-status-success font-semibold text-[10px] border border-emerald-200">
                             <ShieldCheck className="w-3 h-3" />
-                            <span>Emergency Viewed</span>
+                            <span>{t.logs.statusSuccess}</span>
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-medical-red font-semibold text-[10px] border border-rose-200">
                             <ShieldAlert className="w-3 h-3" />
-                            <span>Revoked Attempt</span>
+                            <span>{t.logs.statusRevoked}</span>
                           </span>
                         )}
                       </td>
                       <td className="py-4 px-6 whitespace-nowrap">
                         <span className="inline-flex items-center gap-1 text-[11px] text-text-muted">
                           <span className="w-1.5 h-1.5 rounded-full bg-burgundy" />
-                          <span>Simulated Alert</span>
+                          <span>Dispatched</span>
                         </span>
                       </td>
                     </tr>
@@ -207,11 +208,10 @@ export const AccessLogs: React.FC = () => {
         <div className="p-4 rounded-2xl bg-white border border-beige-pale flex items-start gap-3 text-xs text-text-muted">
           <Info className="w-4 h-4 text-burgundy shrink-0 mt-0.5" />
           <p className="leading-relaxed">
-            <strong className="text-text-dark">Privacy-Conscious Logging:</strong> In accordance with our security principles, raw IP addresses and precise GPS locations are never collected or stored. Scans record only the general device operating category to keep you informed of access events without violating the scanner's privacy.
+            <strong className="text-text-dark">Privacy-Conscious Logging:</strong> {t.logs.privacyNotice}
           </p>
         </div>
       </div>
     </DashboardLayout>
   );
 };
-

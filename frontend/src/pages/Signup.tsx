@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, HeartPulse, User, AlertCircle, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, HeartPulse, AlertCircle, ShieldAlert, Globe } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { LanguageSelector } from '../components/ui/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from '../components/ui/Toast';
+import { Language } from '../types';
 
 export const Signup: React.FC = () => {
+  const { language, setLanguage, t } = useLanguage();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [emergencyNotificationEmail, setEmergencyNotificationEmail] = useState('');
+  const [preferredLang, setPreferredLang] = useState<Language>(language || 'en');
+  const [secondLang, setSecondLang] = useState<string>('none');
+  const [fullNameSecondary, setFullNameSecondary] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreed, setAgreed] = useState(false);
@@ -22,28 +29,33 @@ export const Signup: React.FC = () => {
   const { success } = useToast();
   const navigate = useNavigate();
 
+  const handlePreferredLangChange = (lng: Language) => {
+    setPreferredLang(lng);
+    setLanguage(lng);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!firstName || !lastName || !email || !emergencyNotificationEmail || !password) {
-      setError('Please fill in all required fields, including Emergency Notification Email.');
+      setError(t.auth.requiredFieldsError);
       return;
     }
     if (!emergencyNotificationEmail.includes('@') || !emergencyNotificationEmail.includes('.')) {
-      setError('Please provide a valid Emergency Notification Email address.');
+      setError(t.auth.invalidEmergencyEmailError);
       return;
     }
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError(t.auth.passwordLengthError);
       return;
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t.auth.passwordMismatchError);
       return;
     }
     if (!agreed) {
-      setError('Please agree to the privacy policy & academic demonstration terms.');
+      setError(t.auth.agreeTermsError);
       return;
     }
 
@@ -54,9 +66,12 @@ export const Signup: React.FC = () => {
         last_name: lastName,
         email,
         emergency_notification_email: emergencyNotificationEmail,
-        password
+        password,
+        preferred_language: preferredLang,
+        emergency_second_language: secondLang === 'none' ? null : secondLang,
+        full_name_secondary: fullNameSecondary.trim() || null
       });
-      success('Account created successfully! Your emergency profile is ready.');
+      success(t.auth.signupSuccess);
       navigate('/profile');
     } catch (err: any) {
       setError(err.message || 'Failed to register account');
@@ -80,10 +95,10 @@ export const Signup: React.FC = () => {
             </div>
             <div>
               <span className="font-serif font-bold text-lg block text-white leading-tight">
-                Medora
+                {t.common.appName}
               </span>
               <span className="text-[10px] uppercase font-semibold tracking-wider text-blush block">
-                Emergency Medical ID
+                {t.common.appTagline}
               </span>
             </div>
           </Link>
@@ -91,56 +106,61 @@ export const Signup: React.FC = () => {
           {/* Value Prop */}
           <div className="relative z-10 space-y-4 my-auto py-8 text-left">
             <span className="text-[11px] uppercase tracking-wider text-blush font-semibold block">
-              Peace of Mind
+              {t.auth.peaceOfMindTitle}
             </span>
             <h3 className="font-serif text-2xl font-bold leading-snug">
-              Create an Emergency Profile in 2 Minutes.
+              {t.auth.peaceOfMindText}
             </h3>
             <div className="space-y-3 pt-2 text-xs text-white/80">
               <div className="flex items-start gap-2">
-                <ShieldCheck className="w-4 h-4 text-blush shrink-0 mt-0.5" />
-                <span>You choose exactly what details appear when scanned.</span>
+                <span className="text-blush font-bold">•</span>
+                <span>{t.common.emergencySecondLanguage}: English + {secondLang === 'bn' ? 'বাংলা' : secondLang === 'hi' ? 'हिंदी' : 'None'}</span>
               </div>
               <div className="flex items-start gap-2">
-                <ShieldCheck className="w-4 h-4 text-blush shrink-0 mt-0.5" />
-                <span>Instant QR generation with downloadable wallet cards.</span>
+                <span className="text-blush font-bold">•</span>
+                <span>{t.auth.emergencyNotificationEmailHelp}</span>
               </div>
             </div>
           </div>
 
-          <div className="relative z-10 pt-4 border-t border-white/10 text-[10px] text-white/50 text-left">
-            Essential Medical Information. One Scan Away.
+          <div className="relative z-10 pt-4 border-t border-white/10 text-[11px] text-white/60">
+            ISI Autumn Internship 2026 • Medora Medical Safety
           </div>
         </div>
 
         {/* Right Column: Registration Form */}
-        <div className="md:col-span-7 p-8 sm:p-12 flex flex-col justify-center text-left">
-          <div className="space-y-2 mb-6">
-            <h2 className="font-serif text-3xl font-bold text-burgundy-deep">Create Your Account</h2>
-            <p className="text-xs text-text-muted">
-              Register yourself or an elderly family member to get started.
-            </p>
+        <div className="md:col-span-7 p-6 sm:p-10 flex flex-col justify-center text-left">
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-burgundy-deep tracking-tight">
+                {t.auth.signupTitle}
+              </h2>
+              <p className="text-xs text-text-muted mt-1">
+                {t.auth.signupSubtitle}
+              </p>
+            </div>
+            {/* Quick Language Selector */}
+            <LanguageSelector variant="pills" />
           </div>
 
           {error && (
-            <div className="mb-6 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-medical-red flex items-center gap-2.5">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="mb-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-medical-red flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="First Name"
+                label={t.auth.firstName}
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="e.g. Ananya"
-                icon={<User className="w-4 h-4" />}
                 required
               />
               <Input
-                label="Last Name"
+                label={t.auth.lastName}
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="e.g. Sen"
@@ -149,7 +169,7 @@ export const Signup: React.FC = () => {
             </div>
 
             <Input
-              label="Account / Login Email"
+              label={t.auth.email}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -160,22 +180,76 @@ export const Signup: React.FC = () => {
 
             <div className="space-y-1">
               <Input
-                label="Emergency Notification Email *"
+                label={`${t.auth.emergencyNotificationEmail} *`}
                 type="email"
                 value={emergencyNotificationEmail}
                 onChange={(e) => setEmergencyNotificationEmail(e.target.value)}
-                placeholder="e.g. caregiver@example.com (or personal safety email)"
+                placeholder="e.g. caregiver@example.com"
                 icon={<ShieldAlert className="w-4 h-4 text-burgundy" />}
                 required
               />
               <p className="text-[11px] text-text-muted leading-tight">
-                Mandatory. Instant alerts will be sent here when your emergency QR is scanned (can belong to you, a family member, or caregiver).
+                {t.auth.emergencyNotificationEmailHelp}
               </p>
+            </div>
+
+            {/* Language Preferences Section in Signup */}
+            <div className="p-4 rounded-2xl bg-cream-warm border border-beige-pale space-y-3">
+              <div className="flex items-center gap-2 text-burgundy-deep font-semibold text-xs border-b border-beige-pale/60 pb-2">
+                <Globe className="w-4 h-4 text-burgundy" />
+                <span>{t.settings.languagePreferences}</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-text-dark/80 mb-1">
+                    {t.common.preferredLanguage}
+                  </label>
+                  <select
+                    value={preferredLang}
+                    onChange={(e) => handlePreferredLangChange(e.target.value as Language)}
+                    className="w-full bg-white border border-beige-pale rounded-xl px-3 py-2 text-xs font-semibold text-text-dark focus:outline-none focus:border-burgundy"
+                  >
+                    <option value="en">English (Default)</option>
+                    <option value="bn">বাংলা (Bengali)</option>
+                    <option value="hi">हिंदी (Hindi)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-text-dark/80 mb-1">
+                    {t.common.emergencySecondLanguage}
+                  </label>
+                  <select
+                    value={secondLang}
+                    onChange={(e) => setSecondLang(e.target.value)}
+                    className="w-full bg-white border border-beige-pale rounded-xl px-3 py-2 text-xs font-semibold text-text-dark focus:outline-none focus:border-burgundy"
+                  >
+                    <option value="none">{t.common.secondLanguageNone}</option>
+                    <option value="bn">বাংলা (Bengali)</option>
+                    <option value="hi">हिंदी (Hindi)</option>
+                  </select>
+                </div>
+              </div>
+
+              {secondLang !== 'none' && (
+                <div className="pt-1">
+                  <Input
+                    label={t.auth.fullNameSecondary}
+                    value={fullNameSecondary}
+                    onChange={(e) => setFullNameSecondary(e.target.value)}
+                    placeholder={secondLang === 'bn' ? 'যেমন: অনন্যা সেন' : 'जैसे: अनन्या सेन'}
+                  />
+                  <p className="text-[10px] text-text-muted mt-1">
+                    {t.common.secondLanguageNotice}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold uppercase tracking-wider text-text-dark/80">
-                Password
+                {t.auth.password}
               </label>
               <div className="relative">
                 <input
@@ -201,7 +275,7 @@ export const Signup: React.FC = () => {
 
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold uppercase tracking-wider text-text-dark/80">
-                Confirm Password
+                {t.auth.confirmPassword}
               </label>
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -223,7 +297,7 @@ export const Signup: React.FC = () => {
                   required
                 />
                 <span className="leading-tight">
-                  I agree to the privacy policy, understand that this is for emergency medical information access, and consent to academic demonstration terms.
+                  {t.auth.agreeTerms}
                 </span>
               </label>
             </div>
@@ -234,14 +308,14 @@ export const Signup: React.FC = () => {
               className="w-full py-3 text-sm mt-3"
               loading={loading}
             >
-              Create Medical Profile
+              {t.common.signup}
             </Button>
           </form>
 
           <p className="text-xs text-text-muted text-center mt-6">
-            Already have an account?{' '}
+            {t.auth.alreadyHaveAccount}{' '}
             <Link to="/login" className="text-burgundy font-semibold hover:underline">
-              Log in here
+              {t.common.login}
             </Link>
           </p>
         </div>
@@ -249,4 +323,3 @@ export const Signup: React.FC = () => {
     </div>
   );
 };
-

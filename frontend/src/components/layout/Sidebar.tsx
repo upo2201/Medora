@@ -11,6 +11,7 @@ import {
   HeartPulse
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { cn } from '../../utils/cn';
 
 interface SidebarProps {
@@ -19,15 +20,16 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ unreadNotifications = 0 }) => {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const navItems = [
-    { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { label: 'My Profile', path: '/profile', icon: User },
-    { label: 'My QR Code', path: '/qr', icon: QrCode },
-    { label: 'Access Logs', path: '/access-logs', icon: History },
-    { label: 'Notifications', path: '/notifications', icon: Bell, badge: unreadNotifications },
-    { label: 'Settings', path: '/settings', icon: Settings },
+    { label: t.common.dashboard, path: '/dashboard', icon: LayoutDashboard },
+    { label: t.common.myProfile, path: '/profile', icon: User },
+    { label: t.common.myQrCode, path: '/qr', icon: QrCode },
+    { label: t.common.accessLogs, path: '/access-logs', icon: History },
+    { label: t.common.notifications, path: '/notifications', icon: Bell, badge: unreadNotifications },
+    { label: t.common.settings, path: '/settings', icon: Settings },
   ];
 
   const handleLogout = () => {
@@ -40,15 +42,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ unreadNotifications = 0 }) => 
       <div>
         {/* Brand Header */}
         <div className="p-6 flex items-center gap-3 border-b border-white/10">
-          <div className="w-9 h-9 rounded-xl bg-burgundy-primary flex items-center justify-center text-white shadow-soft">
+          <div className="w-9 h-9 rounded-xl bg-burgundy flex items-center justify-center text-white shadow-soft">
             <HeartPulse className="w-5 h-5" />
           </div>
           <div>
             <span className="font-serif font-bold text-lg tracking-tight block leading-tight text-white">
-              Medora
+              {t.common.appName}
             </span>
             <span className="text-[10px] uppercase font-semibold tracking-wider text-blush block">
-              Emergency ID
+              {t.common.appTagline}
             </span>
           </div>
         </div>
@@ -99,10 +101,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ unreadNotifications = 0 }) => 
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-medium text-white/70 hover:text-white hover:bg-medical-red/30 transition-colors"
         >
           <LogOut className="w-4 h-4 text-white/60" />
-          <span>Log Out</span>
+          <span>{t.common.logout}</span>
         </button>
       </div>
     </aside>
   );
 };
-

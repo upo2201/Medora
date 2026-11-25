@@ -17,11 +17,13 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { api } from '../services/api';
 import { MedicalProfile, QRToken, AccessLog } from '../types';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState<MedicalProfile | null>(null);
@@ -66,7 +68,7 @@ export const Dashboard: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="font-serif text-3xl sm:text-4xl font-bold text-burgundy-deep tracking-tight">
-              Hello, {firstName}! 👋
+              {t.dashboard.welcomeBack}, {firstName}! 👋
             </h1>
             <p className="text-sm text-text-muted mt-1">
               Keep your medical information updated and stay prepared for emergencies.
@@ -80,7 +82,7 @@ export const Dashboard: React.FC = () => {
               onClick={() => navigate('/access-logs')}
               icon={<History className="w-4 h-4 text-burgundy" />}
             >
-              Access Logs
+              {t.common.accessLogs}
             </Button>
             <Button
               variant="cream"
@@ -88,7 +90,7 @@ export const Dashboard: React.FC = () => {
               onClick={() => navigate('/profile')}
               icon={<User className="w-4 h-4 text-burgundy" />}
             >
-              Edit Profile
+              {t.common.myProfile}
             </Button>
             <Button
               variant="primary"
@@ -96,7 +98,7 @@ export const Dashboard: React.FC = () => {
               onClick={() => navigate('/qr')}
               icon={<QrCode className="w-4 h-4" />}
             >
-              My QR Code
+              {t.common.myQrCode}
             </Button>
           </div>
         </div>
@@ -107,16 +109,23 @@ export const Dashboard: React.FC = () => {
           <Card variant="white" className="p-6 relative overflow-hidden flex flex-col justify-between">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-blush text-burgundy-deep font-serif font-bold text-xl flex items-center justify-center shadow-soft">
+                <div className="w-14 h-14 rounded-2xl bg-blush text-burgundy-deep font-serif font-bold text-xl flex items-center justify-center shadow-soft shrink-0">
                   {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : 'P'}
                 </div>
                 <div>
-                  <h3 className="font-serif text-xl font-bold text-text-dark">
-                    {profile?.full_name || 'Loading Profile...'}
-                  </h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-serif text-xl font-bold text-text-dark">
+                      {profile?.full_name || 'Loading Profile...'}
+                    </h3>
+                    {profile?.full_name_secondary && (
+                      <span className="text-xs text-burgundy font-medium">
+                        ({profile.full_name_secondary})
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-text-muted mt-0.5">
-                    {profile?.age ? `Age: ${profile.age} years` : 'Age: Not set'}
-                    {profile?.blood_group ? ` • Blood Group: ${profile.blood_group}` : ''}
+                    {profile?.age ? `${t.emergency.age}: ${profile.age} ${t.emergency.yearsOld}` : `${t.emergency.age}: Not set`}
+                    {profile?.blood_group ? ` • ${t.emergency.bloodGroup}: ${profile.blood_group}` : ''}
                   </p>
                 </div>
               </div>
@@ -125,21 +134,21 @@ export const Dashboard: React.FC = () => {
                 size="sm"
                 onClick={() => navigate('/profile')}
               >
-                Edit
+                {t.common.edit}
               </Button>
             </div>
 
             <div className="mt-6 pt-4 border-t border-beige-pale/60 grid grid-cols-2 gap-4 text-xs">
               <div>
-                <span className="text-text-muted block">Emergency Contact</span>
+                <span className="text-text-muted block">{t.profile.emergencyContactTitle}</span>
                 <span className="font-semibold text-text-dark truncate block mt-0.5">
                   {profile?.emergency_contact_name
-                    ? `${profile.emergency_contact_name} (${profile.emergency_contact_relationship || 'Contact'})`
+                    ? `${profile.emergency_contact_name}${profile.emergency_contact_name_secondary ? ` (${profile.emergency_contact_name_secondary})` : ''} - ${profile.emergency_contact_relationship || 'Contact'}`
                     : 'Not configured'}
                 </span>
               </div>
               <div>
-                <span className="text-text-muted block">Primary Conditions</span>
+                <span className="text-text-muted block">{t.emergency.conditions}</span>
                 <span className="font-semibold text-text-dark truncate block mt-0.5">
                   {profile?.medical_conditions && profile.medical_conditions.length > 0
                     ? profile.medical_conditions.join(', ')
@@ -154,19 +163,19 @@ export const Dashboard: React.FC = () => {
             <div className="flex items-start justify-between">
               <div>
                 <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-                  Emergency Access
+                  {t.dashboard.qrStatus}
                 </span>
                 <h3 className="font-serif text-xl font-bold text-text-dark mt-1">
-                  Your Medical QR Code
+                  {t.common.myQrCode}
                 </h3>
               </div>
               {qrToken?.status === 'active' ? (
-                <Badge variant="active">Active</Badge>
+                <Badge variant="active">{t.dashboard.activeStatus}</Badge>
               ) : qrToken?.status === 'revoked' ? (
-                <Badge variant="revoked">Revoked</Badge>
+                <Badge variant="revoked">{t.dashboard.revokedStatus}</Badge>
               ) : (
                 <span className="px-2.5 py-1 rounded-full bg-beige-pale text-text-muted text-[10px] font-bold border border-beige-subtle">
-                  Not Generated
+                  {t.dashboard.notGeneratedStatus}
                 </span>
               )}
             </div>
@@ -191,7 +200,7 @@ export const Dashboard: React.FC = () => {
                 onClick={() => navigate('/qr')}
                 icon={<ArrowRight className="w-4 h-4" />}
               >
-                {qrToken?.status === 'active' ? 'View QR' : 'Generate QR'}
+                {qrToken?.status === 'active' ? t.dashboard.viewQr : t.dashboard.generateQr}
               </Button>
             </div>
           </Card>
@@ -205,7 +214,7 @@ export const Dashboard: React.FC = () => {
             </div>
             <div>
               <p className="text-2xl font-serif font-bold text-text-dark">{totalScans}</p>
-              <p className="text-xs text-text-muted font-medium">Total Scans All-Time</p>
+              <p className="text-xs text-text-muted font-medium">{t.dashboard.totalScans}</p>
             </div>
           </div>
 
@@ -215,7 +224,7 @@ export const Dashboard: React.FC = () => {
             </div>
             <div>
               <p className="text-2xl font-serif font-bold text-text-dark">{thisMonthScans}</p>
-              <p className="text-xs text-text-muted font-medium">Scans This Month</p>
+              <p className="text-xs text-text-muted font-medium">{t.dashboard.thisMonthScans}</p>
             </div>
           </div>
 
@@ -225,7 +234,7 @@ export const Dashboard: React.FC = () => {
             </div>
             <div>
               <p className="text-2xl font-serif font-bold text-text-dark">{revokedCount}</p>
-              <p className="text-xs text-text-muted font-medium">Revoked Codes</p>
+              <p className="text-xs text-text-muted font-medium">{t.dashboard.revokedStatus} Codes</p>
             </div>
           </div>
         </div>
@@ -235,7 +244,7 @@ export const Dashboard: React.FC = () => {
           <div className="space-y-2 max-w-xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-blush text-[11px] font-semibold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Preparedness Recommendation</span>
+              <span>{t.dashboard.preparednessScore}</span>
             </div>
             <h3 className="font-serif text-2xl font-bold text-white">
               Be Prepared, Always.
@@ -252,7 +261,7 @@ export const Dashboard: React.FC = () => {
               onClick={() => navigate('/qr')}
               icon={<Smartphone className="w-4 h-4 text-burgundy" />}
             >
-              Get Wallpaper
+              {t.qr.downloadWallpaper}
             </Button>
             <Button
               variant="secondary"
@@ -260,7 +269,7 @@ export const Dashboard: React.FC = () => {
               onClick={() => navigate('/qr')}
               icon={<Printer className="w-4 h-4 text-burgundy" />}
             >
-              Print Card
+              {t.qr.printPdfCard}
             </Button>
           </div>
         </div>
@@ -270,7 +279,7 @@ export const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between pb-4 border-b border-beige-pale/60">
             <div>
               <h3 className="font-serif text-lg font-bold text-burgundy-deep">
-                Recent Access Activity
+                {t.dashboard.recentAccessActivity}
               </h3>
               <p className="text-xs text-text-muted">
                 Every scan is recorded for transparency and peace of mind.
@@ -282,14 +291,14 @@ export const Dashboard: React.FC = () => {
               onClick={() => navigate('/access-logs')}
               icon={<History className="w-4 h-4" />}
             >
-              View All Logs
+              {t.common.accessLogs}
             </Button>
           </div>
 
           <div className="mt-4">
             {recentLogs.length === 0 ? (
               <div className="py-8 text-center text-text-muted text-xs">
-                No emergency access scans have been recorded yet.
+                {t.dashboard.noRecentScans}
               </div>
             ) : (
               <div className="divide-y divide-beige-pale/40">
@@ -323,4 +332,3 @@ export const Dashboard: React.FC = () => {
     </DashboardLayout>
   );
 };
-

@@ -4,6 +4,8 @@ export interface User {
   id: string;
   email: string;
   full_name: string;
+  preferred_language?: Language;
+  emergency_second_language?: Language | null;
 }
 
 export interface MedicationItem {
@@ -31,6 +33,10 @@ export interface MedicalProfile {
   emergency_notification_email?: string | null;
   emergency_email_verified?: boolean;
   pending_emergency_notification_email?: string | null;
+  preferred_language?: Language;
+  emergency_second_language?: Language | null;
+  full_name_secondary?: string | null;
+  emergency_contact_name_secondary?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -81,6 +87,8 @@ export interface EmergencyPublicData {
   status: 'active' | 'revoked' | 'invalid';
   message?: string;
   full_name?: string;
+  full_name_secondary?: string | null;
+  emergency_second_language?: Language | null;
   age?: number;
   blood_group?: string;
   medical_conditions?: string[];
@@ -91,6 +99,7 @@ export interface EmergencyPublicData {
   doctor_contact?: string | null;
   emergency_contact?: {
     name: string;
+    name_secondary?: string | null;
     relationship: string;
     phone: string;
   };

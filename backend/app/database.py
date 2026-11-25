@@ -51,6 +51,10 @@ def init_db():
             emergency_email_verification_token TEXT,
             emergency_email_verification_sent_at TEXT,
             pending_emergency_notification_email TEXT,
+            preferred_language TEXT NOT NULL DEFAULT 'en',
+            emergency_second_language TEXT,
+            full_name_secondary TEXT,
+            emergency_contact_name_secondary TEXT,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
@@ -112,6 +116,14 @@ def init_db():
             cursor.execute("ALTER TABLE medical_profiles ADD COLUMN emergency_email_verification_sent_at TEXT;")
         if "pending_emergency_notification_email" not in mp_columns:
             cursor.execute("ALTER TABLE medical_profiles ADD COLUMN pending_emergency_notification_email TEXT;")
+        if "preferred_language" not in mp_columns:
+            cursor.execute("ALTER TABLE medical_profiles ADD COLUMN preferred_language TEXT NOT NULL DEFAULT 'en';")
+        if "emergency_second_language" not in mp_columns:
+            cursor.execute("ALTER TABLE medical_profiles ADD COLUMN emergency_second_language TEXT;")
+        if "full_name_secondary" not in mp_columns:
+            cursor.execute("ALTER TABLE medical_profiles ADD COLUMN full_name_secondary TEXT;")
+        if "emergency_contact_name_secondary" not in mp_columns:
+            cursor.execute("ALTER TABLE medical_profiles ADD COLUMN emergency_contact_name_secondary TEXT;")
             
         cursor.execute("PRAGMA table_info(notifications);")
         notif_columns = [row["name"] for row in cursor.fetchall()]

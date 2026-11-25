@@ -59,6 +59,9 @@ class ApiService {
     email: string;
     password: string;
     emergency_notification_email: string;
+    preferred_language?: string;
+    emergency_second_language?: string | null;
+    full_name_secondary?: string | null;
   }): Promise<{ token: string; user: User }> {
     const res = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',

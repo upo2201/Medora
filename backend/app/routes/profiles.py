@@ -69,6 +69,10 @@ def get_profile():
                 "emergency_notification_email": profile["emergency_notification_email"] if "emergency_notification_email" in profile.keys() and profile["emergency_notification_email"] else (profile["emergency_contact_email"] if "emergency_contact_email" in profile.keys() else None),
                 "emergency_email_verified": bool(profile["emergency_email_verified"]) if "emergency_email_verified" in profile.keys() else False,
                 "pending_emergency_notification_email": profile["pending_emergency_notification_email"] if "pending_emergency_notification_email" in profile.keys() else None,
+                "preferred_language": profile["preferred_language"] if "preferred_language" in profile.keys() and profile["preferred_language"] else "en",
+                "emergency_second_language": profile["emergency_second_language"] if "emergency_second_language" in profile.keys() else None,
+                "full_name_secondary": profile["full_name_secondary"] if "full_name_secondary" in profile.keys() else None,
+                "emergency_contact_name_secondary": profile["emergency_contact_name_secondary"] if "emergency_contact_name_secondary" in profile.keys() else None,
                 "created_at": profile["created_at"],
                 "updated_at": profile["updated_at"]
             },
@@ -114,6 +118,24 @@ def update_profile():
     
     submitted_notif_email = (data.get("emergency_notification_email") or data.get("emergency_contact_email") or "").strip().lower()
 
+    # Language preferences
+    raw_pref_lang = (data.get("preferred_language") or "").strip().lower()
+    preferred_lang = raw_pref_lang if raw_pref_lang in ("en", "bn", "hi") else None
+
+    raw_sec_lang = data.get("emergency_second_language")
+    if raw_sec_lang is not None:
+        emergency_sec_lang = raw_sec_lang.strip().lower() if raw_sec_lang.strip().lower() in ("bn", "hi") else None
+    else:
+        emergency_sec_lang = None
+
+    full_name_sec = data.get("full_name_secondary")
+    if full_name_sec is not None:
+        full_name_sec = full_name_sec.strip() or None
+
+    ec_name_sec = data.get("emergency_contact_name_secondary")
+    if ec_name_sec is not None:
+        ec_name_sec = ec_name_sec.strip() or None
+
     now = datetime.now(timezone.utc).isoformat()
     response_msg = "Medical profile updated successfully"
 
@@ -131,6 +153,11 @@ def update_profile():
         else:
             target_notif_email = curr["emergency_notification_email"] or curr["emergency_contact_email"] or ""
 
+        target_pref_lang = preferred_lang or (curr["preferred_language"] if "preferred_language" in curr.keys() and curr["preferred_language"] else "en")
+        target_sec_lang = emergency_sec_lang if "emergency_second_language" in data else (curr["emergency_second_language"] if "emergency_second_language" in curr.keys() else None)
+        target_fn_sec = full_name_sec if "full_name_secondary" in data else (curr["full_name_secondary"] if "full_name_secondary" in curr.keys() else None)
+        target_ec_sec = ec_name_sec if "emergency_contact_name_secondary" in data else (curr["emergency_contact_name_secondary"] if "emergency_contact_name_secondary" in curr.keys() else None)
+
         cursor.execute(
             """UPDATE medical_profiles
                SET full_name = ?, age = ?, blood_group = ?, medical_conditions = ?,
@@ -144,11 +171,17 @@ def update_profile():
                    pending_emergency_notification_email = NULL,
                    emergency_email_verification_code = NULL,
                    emergency_email_verification_token = NULL,
+                   preferred_language = ?,
+                   emergency_second_language = ?,
+                   full_name_secondary = ?,
+                   emergency_contact_name_secondary = ?,
                    updated_at = ?
                WHERE user_id = ?""",
             (full_name, age, blood_group, conditions, allergies, no_known_allergies,
              medications, doctor_name, doctor_contact, ec_name, ec_rel, ec_phone,
-             target_notif_email, target_notif_email, now, user_id)
+             target_notif_email, target_notif_email,
+             target_pref_lang, target_sec_lang, target_fn_sec, target_ec_sec,
+             now, user_id)
         )
 
         # Also update user's name
