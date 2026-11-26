@@ -1,10 +1,66 @@
 import json
+import ast
 from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify, g
 from app.database import get_db
 from app.middleware.authentication import token_required
 
 profiles_bp = Blueprint("profiles", __name__)
+
+def _safe_json_list(val, normalize_medications=False):
+    """
+    Safely parses JSON lists from database columns.
+    Handles None, empty strings, already-parsed lists, JSON-encoded strings,
+    Python-string representations (single quotes), and legacy comma-separated text.
+    If normalize_medications=True, ensures every item is a dict with name, dosage, frequency.
+    """
+    if val is None:
+        return []
+    if isinstance(val, list):
+        items = val
+    elif isinstance(val, (int, float, bool)):
+        return []
+    elif isinstance(val, str):
+        cleaned = val.strip()
+        if not cleaned or cleaned in ("[]", "{}", "null", "None"):
+            return []
+        parsed = None
+        try:
+            parsed = json.loads(cleaned)
+        except Exception:
+            try:
+                parsed = ast.literal_eval(cleaned)
+            except Exception:
+                pass
+        if isinstance(parsed, list):
+            items = parsed
+        elif isinstance(parsed, dict):
+            items = [parsed]
+        elif parsed is not None:
+            items = [str(parsed)]
+        else:
+            items = [x.strip() for x in cleaned.split(",") if x.strip()]
+    else:
+        return []
+
+    if normalize_medications:
+        normalized = []
+        for item in items:
+            if isinstance(item, dict):
+                normalized.append({
+                    "name": str(item.get("name") or "").strip(),
+                    "dosage": str(item.get("dosage") or "").strip(),
+                    "frequency": str(item.get("frequency") or "").strip()
+                })
+            elif isinstance(item, str) and item.strip():
+                normalized.append({
+                    "name": item.strip(),
+                    "dosage": "",
+                    "frequency": ""
+                })
+        return normalized
+
+    return [str(x).strip() for x in items if str(x).strip()]
 
 @profiles_bp.route("", methods=["GET"])
 @token_required
@@ -22,10 +78,25 @@ def get_profile():
         cursor.execute("SELECT * FROM emergency_visibility WHERE profile_id = ?", (profile_id,))
         visibility = cursor.fetchone()
 
-        # Parse JSON fields safely
-        conditions = json.loads(profile["medical_conditions"]) if profile["medical_conditions"] else []
-        allergies = json.loads(profile["allergies"]) if profile["allergies"] else []
-        medications = json.loads(profile["current_medications"]) if profile["current_medications"] else []
+        # If visibility record is missing, auto-create default record
+        if not visibility:
+            now_iso = datetime.now(timezone.utc).isoformat()
+            vis_id = f"vis-{profile_id}"
+            cursor.execute(
+                """INSERT OR IGNORE INTO emergency_visibility
+                   (id, profile_id, show_name, show_age, show_blood_group, show_allergies,
+                    show_medications, show_conditions, show_doctor_details, show_emergency_contact, updated_at)
+                   VALUES (?, ?, 1, 1, 1, 1, 1, 1, 0, 1, ?)""",
+                (vis_id, profile_id, now_iso)
+            )
+            conn.commit()
+            cursor.execute("SELECT * FROM emergency_visibility WHERE profile_id = ?", (profile_id,))
+            visibility = cursor.fetchone()
+
+        # Parse JSON fields safely with fallback for malformed or legacy data
+        conditions = _safe_json_list(profile["medical_conditions"])
+        allergies = _safe_json_list(profile["allergies"])
+        medications = _safe_json_list(profile["current_medications"], normalize_medications=True)
 
         vis_dict = {
             "show_name": bool(visibility["show_name"]) if visibility else True,

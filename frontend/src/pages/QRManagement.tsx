@@ -116,7 +116,7 @@ export const QRManagement: React.FC = () => {
   // Guaranteed NEVER to resolve to localhost or 127.0.0.1
   const effectiveBaseUrl = (customBaseUrl.trim() && isPublicUrl(customBaseUrl))
     ? customBaseUrl.trim()
-    : (activeTunnel || (isPublicUrl(configuredBaseUrl) ? configuredBaseUrl : (!isLocal && isPublicUrl(currentOrigin) ? currentOrigin : 'https://medora-emergency.onrender.com')));
+    : (activeTunnel || (isPublicUrl(configuredBaseUrl) ? configuredBaseUrl : (!isLocal && isPublicUrl(currentOrigin) ? currentOrigin : 'https://medora-frontend-tawk.onrender.com')));
   
   const emergencyUrl = (activeTunnel && rawToken ? `${activeTunnel}/emergency/${rawToken}` : (qrToken?.emergency_url && isPublicUrl(qrToken.emergency_url) ? qrToken.emergency_url : '')) || (rawToken ? `${effectiveBaseUrl.replace(/\/$/, '')}/emergency/${rawToken}` : '');
 
@@ -242,7 +242,7 @@ export const QRManagement: React.FC = () => {
                     type="text"
                     value={customBaseUrl || (isPublicUrl(configuredBaseUrl) ? configuredBaseUrl : activeTunnel)}
                     onChange={(e) => setCustomBaseUrl(e.target.value)}
-                    placeholder="https://medora-emergency.onrender.com"
+                    placeholder="https://medora-frontend-tawk.onrender.com"
                     className="w-full px-3 py-2 text-xs bg-white border border-beige-pale rounded-xl font-mono text-text-dark focus:outline-none focus:border-burgundy"
                   />
                   {isLocal ? (

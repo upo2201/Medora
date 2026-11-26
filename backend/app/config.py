@@ -19,6 +19,14 @@ if os.path.exists(_root_env):
 # 3. Default cwd fallback
 load_dotenv()
 
+def _normalize_url(val: str, default: str = "") -> str:
+    clean = (val or "").strip().rstrip("/")
+    if not clean:
+        return default
+    if not clean.startswith("http://") and not clean.startswith("https://"):
+        clean = f"https://{clean}"
+    return clean
+
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "medora-medical-snapshot-qr-secure-jwt-secret-key-2026")
     SUPABASE_URL = os.getenv("SUPABASE_URL", "")
@@ -28,8 +36,8 @@ class Config:
     
     # Public Base URL for Emergency QR Codes
     # (MUST be accessible from external mobile phones - never localhost or 127.0.0.1 in QR codes)
-    EMERGENCY_BASE_URL = os.getenv("EMERGENCY_BASE_URL", "").rstrip("/")
-    FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+    EMERGENCY_BASE_URL = _normalize_url(os.getenv("EMERGENCY_BASE_URL", ""))
+    FRONTEND_URL = _normalize_url(os.getenv("FRONTEND_URL", "http://localhost:5173"), default="http://localhost:5173")
     
     backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     DEVELOPMENT_DB_PATH = os.path.abspath(os.path.join(backend_dir, "medora.db"))

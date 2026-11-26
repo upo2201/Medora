@@ -79,11 +79,23 @@ def is_tunnel_alive() -> bool:
         return False
     return False
 
+RENDER_FRONTEND_PRODUCTION_URL = "https://medora-frontend-tawk.onrender.com"
+
+def is_render_production() -> bool:
+    """Returns True if running in Render cloud production environment."""
+    from app.config import Config
+    if os.getenv("RENDER") == "true" or os.getenv("RENDER_SERVICE_ID") or os.getenv("RENDER_INSTANCE_ID"):
+        return True
+    for u in (Config.EMERGENCY_BASE_URL, Config.FRONTEND_URL):
+        if u and "onrender.com" in u.lower():
+            return True
+    return False
+
 def get_active_tunnel_url() -> Optional[str]:
     """
     Returns the active public tunnel URL if Public Testing Mode is active.
-    Authoritatively checks ngrok's local control API (port 4040), followed by in-memory
-    state, environment variable, and persistent runtime state files.
+    Authoritatively checks ngrok's local control API (port 4040).
+    NEVER returns a stale/dead ngrok URL from cache or persistent files when port 4040 is inactive.
     """
     global _in_memory_tunnel_url
 
@@ -95,16 +107,20 @@ def get_active_tunnel_url() -> Optional[str]:
             set_active_tunnel(live_url, {"source": "ngrok_api_probe"})
         return live_url
 
-    # 2. In-memory cached URL (used by tests / mocks when ngrok is not running locally)
-    if _in_memory_tunnel_url:
+    # 2. In-memory cached URL (used by tests / mocks when explicitly set with 'test')
+    if _in_memory_tunnel_url and "test" in _in_memory_tunnel_url.lower():
         return _in_memory_tunnel_url
 
-    # 3. Environment variable
+    # If ngrok was not found on port 4040, clear any cached ngrok URL to prevent stale usage
+    if _in_memory_tunnel_url and "ngrok" in _in_memory_tunnel_url.lower():
+        _in_memory_tunnel_url = None
+
+    # 3. Environment variable (only if non-ngrok or explicitly provided for testing)
     env_url = os.getenv("PUBLIC_TUNNEL_URL", "").strip().rstrip("/")
-    if env_url:
+    if env_url and ("ngrok" not in env_url.lower() or "test" in env_url.lower()):
         return env_url
 
-    # 4. Check persistent state files
+    # 4. Check persistent state files (only if non-ngrok or alive)
     for sf in STATE_FILES:
         if os.path.exists(sf):
             try:
@@ -112,8 +128,15 @@ def get_active_tunnel_url() -> Optional[str]:
                     data = json.load(f)
                     if data.get("active") and data.get("tunnel_url"):
                         candidate = data["tunnel_url"]
-                        _in_memory_tunnel_url = candidate
-                        return candidate
+                        if "ngrok" in candidate.lower():
+                            # Stale ngrok entry in file when port 4040 is dead: remove it
+                            try:
+                                os.remove(sf)
+                            except Exception:
+                                pass
+                        else:
+                            _in_memory_tunnel_url = candidate
+                            return candidate
             except Exception:
                 pass
 
@@ -159,80 +182,97 @@ def get_tunnel_status() -> Dict[str, Any]:
     }
 
 def is_public_mode_active() -> bool:
-    """Returns True if a live public ngrok tunnel, production URL, or cloud container origin is active."""
+    """Returns True if running in production, or if a live public ngrok tunnel is active."""
     from app.config import Config
+    if is_render_production():
+        return True
     status = get_tunnel_status()
     if status["public_testing_mode"]:
         return True
     conf = (Config.EMERGENCY_BASE_URL or "").lower()
     if conf and "localhost" not in conf and "127.0.0.1" not in conf and "ngrok" not in conf:
         return True
-    render_url = (os.getenv("RENDER_EXTERNAL_URL") or "").lower()
-    if render_url and "localhost" not in render_url and "127.0.0.1" not in render_url:
-        return True
     return False
 
 def get_public_frontend_url(fallback_candidate: Optional[str] = None) -> str:
     """
-    Returns the public base URL for links that need to be opened externally on phones
-    (such as emergency QR scan links).
-    Prioritizes:
-    1. Active public ngrok tunnel (highest priority for cross-device mobile scanning).
-    2. Explicit non-localhost candidate/override (e.g. production domain).
-    3. Configured EMERGENCY_BASE_URL (if set and non-localhost).
-    4. Render Cloud external URL (RENDER_EXTERNAL_URL).
-    5. Request Origin/Host from Flask context (if public/non-localhost).
-    6. Public emergency fallback domain (https://medora-emergency.onrender.com) - NEVER localhost or 127.0.0.1.
+    Returns the public base URL for emergency QR scan links.
+    Guarantees:
+    - Never returns localhost or 127.0.0.1 in production.
+    - Never returns an expired ngrok tunnel URL.
+    - Never returns a fabricated or broken URL (like medora-emergency.onrender.com).
+    - In Render production, always returns the active frontend SPA URL: https://medora-frontend-tawk.onrender.com
+    - In local development, returns active live ngrok tunnel if Public Mode is running.
+    - Explicit non-localhost candidate overrides (e.g. from API caller or custom domain) are honored.
     """
     from app.config import Config
 
     candidate = (fallback_candidate or "").strip().rstrip("/")
-    candidate_lower = candidate.lower()
-
-    # 1. Active public ngrok tunnel (HIGHEST PRIORITY for cross-device mobile scanning)
-    tunnel_url = get_active_tunnel_url()
-    if tunnel_url:
-        return tunnel_url
-
-    # 2. Explicit non-localhost candidate override (e.g. custom domain)
-    if candidate and "localhost" not in candidate_lower and "127.0.0.1" not in candidate_lower:
+    if candidate and "localhost" not in candidate.lower() and "127.0.0.1" not in candidate.lower():
         if not candidate.startswith("http://") and not candidate.startswith("https://"):
             candidate = f"https://{candidate}"
         return candidate
 
-    # 3. Configured EMERGENCY_BASE_URL (e.g. deployed production on cloud)
+    # 1. Render Production Environment
+    if is_render_production():
+        # Check EMERGENCY_BASE_URL (must be frontend, not backend)
+        em_base = (Config.EMERGENCY_BASE_URL or "").strip().rstrip("/")
+        if em_base and "localhost" not in em_base.lower() and "127.0.0.1" not in em_base.lower():
+            if "backend" not in em_base.lower():
+                if not em_base.startswith("http://") and not em_base.startswith("https://"):
+                    em_base = f"https://{em_base}"
+                return em_base
+
+        # Check FRONTEND_URL
+        fe_url = (Config.FRONTEND_URL or "").strip().rstrip("/")
+        if fe_url and "localhost" not in fe_url.lower() and "127.0.0.1" not in fe_url.lower():
+            if "backend" not in fe_url.lower():
+                if not fe_url.startswith("http://") and not fe_url.startswith("https://"):
+                    fe_url = f"https://{fe_url}"
+                return fe_url
+
+        # Check client Origin header if available
+        try:
+            from flask import request, has_request_context
+            if has_request_context():
+                origin = (request.headers.get("Origin") or "").strip().rstrip("/")
+                if origin and "localhost" not in origin.lower() and "127.0.0.1" not in origin.lower():
+                    if "backend" not in origin.lower():
+                        return origin
+        except Exception:
+            pass
+
+        return RENDER_FRONTEND_PRODUCTION_URL
+
+    # 2. Local Development: Active Live ngrok Tunnel
+    tunnel_url = get_active_tunnel_url()
+    if tunnel_url:
+        return tunnel_url
+
+    # 3. Configured EMERGENCY_BASE_URL if set and non-localhost
     configured = (Config.EMERGENCY_BASE_URL or "").strip().rstrip("/")
     if configured and "localhost" not in configured.lower() and "127.0.0.1" not in configured.lower():
         if not configured.startswith("http://") and not configured.startswith("https://"):
             configured = f"https://{configured}"
         return configured
 
-    # 4. Render External URL
-    render_url = (os.getenv("RENDER_EXTERNAL_URL") or "").strip().rstrip("/")
-    if render_url and "localhost" not in render_url.lower() and "127.0.0.1" not in render_url.lower():
-        if not render_url.startswith("http://") and not render_url.startswith("https://"):
-            render_url = f"https://{render_url}"
-        return render_url
-
-    # 5. Request headers if running behind cloud proxy / container
-    try:
-        from flask import request, has_request_context
-        if has_request_context():
-            origin = (request.headers.get("Origin") or "").strip().rstrip("/")
-            if origin and "localhost" not in origin.lower() and "127.0.0.1" not in origin.lower():
-                return origin
-            host_url = (request.host_url or "").strip().rstrip("/")
-            if host_url and "localhost" not in host_url.lower() and "127.0.0.1" not in host_url.lower():
-                return host_url
-    except Exception:
-        pass
-
-    # 6. Public Default Fallback — NEVER return localhost or 127.0.0.1 for emergency QR URLs
-    # This guarantees external phone cameras will never receive an unreachable localhost loopback address
+    # 4. Configured FRONTEND_URL if set and non-localhost
     frontend_candidate = (Config.FRONTEND_URL or "").strip().rstrip("/")
     if frontend_candidate and "localhost" not in frontend_candidate.lower() and "127.0.0.1" not in frontend_candidate.lower():
         if not frontend_candidate.startswith("http://") and not frontend_candidate.startswith("https://"):
             frontend_candidate = f"https://{frontend_candidate}"
         return frontend_candidate
 
-    return "https://medora-emergency.onrender.com"
+    # 5. Local request context Origin if non-localhost
+    try:
+        from flask import request, has_request_context
+        if has_request_context():
+            origin = (request.headers.get("Origin") or "").strip().rstrip("/")
+            if origin and "localhost" not in origin.lower() and "127.0.0.1" not in origin.lower():
+                return origin
+    except Exception:
+        pass
+
+    # 6. Public Default Fallback — NEVER return localhost or 127.0.0.1 for emergency QR URLs
+    # This guarantees external phone cameras will never receive an unreachable localhost loopback address
+    return RENDER_FRONTEND_PRODUCTION_URL
