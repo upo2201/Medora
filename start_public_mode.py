@@ -20,6 +20,7 @@ BACKEND_DIR = os.path.join(ROOT_DIR, "backend")
 FRONTEND_DIR = os.path.join(ROOT_DIR, "frontend")
 BIN_DIR = os.path.join(ROOT_DIR, "bin")
 NGROK_EXE = os.path.join(BIN_DIR, "ngrok.exe")
+NGROK_CONFIG = os.path.join(BIN_DIR, "ngrok.yml")
 
 VENV_PYTHON = os.path.join(BACKEND_DIR, "venv", "Scripts", "python.exe")
 if not os.path.exists(VENV_PYTHON):
@@ -57,17 +58,23 @@ def check_requirements():
 
 def ensure_ngrok_authtoken():
     """Checks for ngrok authtoken; prompts user if missing."""
-    env_file = os.path.join(BACKEND_DIR, ".env")
     token_found = os.getenv("NGROK_AUTHTOKEN", "").strip()
 
-    if not token_found and os.path.exists(env_file):
-        with open(env_file, "r", encoding="utf-8") as f:
-            for line in f:
-                if line.startswith("NGROK_AUTHTOKEN="):
-                    token_found = line.split("=", 1)[1].strip()
-
     if not token_found:
-        res = subprocess.run([NGROK_EXE, "config", "check"], capture_output=True, text=True)
+        for ef in [os.path.join(ROOT_DIR, ".env"), os.path.join(BACKEND_DIR, ".env")]:
+            if os.path.exists(ef):
+                with open(ef, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if line.startswith("NGROK_AUTHTOKEN="):
+                            val = line.split("=", 1)[1].strip()
+                            if val and val != "your_ngrok_authtoken_here":
+                                token_found = val
+                                break
+            if token_found:
+                break
+
+    if not token_found and os.path.exists(NGROK_CONFIG):
+        res = subprocess.run([NGROK_EXE, "config", "check", "--config", NGROK_CONFIG], capture_output=True, text=True)
         if res.returncode == 0 and "valid" in res.stdout.lower():
             return True
 
@@ -87,7 +94,8 @@ def ensure_ngrok_authtoken():
 
         if user_input:
             token_found = user_input
-            subprocess.run([NGROK_EXE, "config", "add-authtoken", token_found], check=False)
+            subprocess.run([NGROK_EXE, "config", "add-authtoken", token_found, "--config", NGROK_CONFIG], check=False)
+            env_file = os.path.join(BACKEND_DIR, ".env")
             with open(env_file, "a", encoding="utf-8") as f:
                 f.write(f"\nNGROK_AUTHTOKEN={token_found}\n")
             print("  ✓ Authtoken saved successfully!")
@@ -95,7 +103,7 @@ def ensure_ngrok_authtoken():
             print("  [!] Continuing without authtoken. Note: ngrok v3 requires authentication.")
 
     if token_found:
-        subprocess.run([NGROK_EXE, "config", "add-authtoken", token_found], check=False, capture_output=True)
+        subprocess.run([NGROK_EXE, "config", "add-authtoken", token_found, "--config", NGROK_CONFIG], check=False, capture_output=True)
 
 def wait_for_http(url: str, timeout: int = 15, name: str = "Service") -> bool:
     """Polls an HTTP endpoint until it returns a successful response."""
@@ -155,7 +163,7 @@ def start_frontend():
         cleanup_and_exit(1)
 
 def start_ngrok() -> str:
-    """Starts ngrok tunnel on port 5173 using pyngrok pointing to bin/ngrok.exe."""
+    """Starts ngrok tunnel on port 5173 using pyngrok pointing to bin/ngrok.exe and bin/ngrok.yml."""
     global active_tunnel_url
     print("[*] Establishing secure public ngrok HTTPS tunnel to port 5173...")
     
@@ -164,6 +172,7 @@ def start_ngrok() -> str:
         from pyngrok.exception import PyngrokNgrokError
 
         conf.get_default().ngrok_path = NGROK_EXE
+        conf.get_default().config_path = NGROK_CONFIG
 
         # Check if an existing tunnel is already connected
         try:
@@ -178,6 +187,31 @@ def start_ngrok() -> str:
         if not active_tunnel_url:
             tunnel = ngrok.connect(5173)
             active_tunnel_url = tunnel.public_url
+
+        # Ensure HTTPS protocol
+        if active_tunnel_url and active_tunnel_url.startswith("http://"):
+            active_tunnel_url = active_tunnel_url.replace("http://", "https://", 1)
+
+        # Wait and verify that ngrok's local inspection API on port 4040 confirms the active tunnel
+        verified = False
+        start_wait = time.time()
+        while time.time() - start_wait < 15:
+            try:
+                req = urllib.request.Request("http://127.0.0.1:4040/api/tunnels", headers={"User-Agent": "Medora-App/2.0"})
+                with urllib.request.urlopen(req, timeout=1) as res:
+                    t_data = json.loads(res.read().decode("utf-8"))
+                    for t in t_data.get("tunnels", []):
+                        p = t.get("public_url", "")
+                        if p:
+                            if p.startswith("http://"):
+                                p = p.replace("http://", "https://", 1)
+                            active_tunnel_url = p
+                            verified = True
+                            break
+                if verified:
+                    break
+            except Exception:
+                time.sleep(0.5)
 
         # Persist runtime state files in both backend and root directories
         for sf in [os.path.join(BACKEND_DIR, ".tunnel_state.json"), os.path.join(ROOT_DIR, ".tunnel_state.json")]:

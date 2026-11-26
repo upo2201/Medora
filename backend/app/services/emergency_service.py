@@ -122,6 +122,9 @@ def get_public_emergency_profile(raw_token: str, user_agent_str: str):
             public_data["full_name"] = med_profile["full_name"]
             if "full_name_secondary" in med_profile.keys() and med_profile["full_name_secondary"]:
                 public_data["full_name_secondary"] = med_profile["full_name_secondary"]
+            elif sec_lang in ("bn", "hi") and med_profile["full_name"]:
+                from app.utils.transliteration import transliterate_name
+                public_data["full_name_secondary"] = transliterate_name(med_profile["full_name"], sec_lang)
             
         if vis_dict["show_age"] and med_profile["age"] is not None:
             public_data["age"] = med_profile["age"]
@@ -160,6 +163,9 @@ def get_public_emergency_profile(raw_token: str, user_agent_str: str):
             }
             if "emergency_contact_name_secondary" in med_profile.keys() and med_profile["emergency_contact_name_secondary"]:
                 ec_payload["name_secondary"] = med_profile["emergency_contact_name_secondary"]
+            elif sec_lang in ("bn", "hi") and med_profile["emergency_contact_name"]:
+                from app.utils.transliteration import transliterate_name
+                ec_payload["name_secondary"] = transliterate_name(med_profile["emergency_contact_name"], sec_lang)
             public_data["emergency_contact"] = ec_payload
             
         # Update token last_accessed_at

@@ -247,6 +247,59 @@ export interface TranslationSchema {
     frequency: string;
     bilingualNotice: string;
   };
+  // Landing Page
+  home: {
+    heroBadge: string;
+    heroHeadline1: string;
+    heroHeadlineHighlight: string;
+    heroSubtitle: string;
+    createProfileButton: string;
+    seeHowItWorksButton: string;
+    benefitQuickAccessTitle: string;
+    benefitQuickAccessDesc: string;
+    benefitPrivacyFirstTitle: string;
+    benefitPrivacyFirstDesc: string;
+    benefitSeniorFriendlyTitle: string;
+    benefitSeniorFriendlyDesc: string;
+    mockupAge: string;
+    mockupActiveQr: string;
+    mockupScanPrompt: string;
+    mockupScanSub: string;
+    mockupBloodGroupLabel: string;
+    mockupBloodGroupValue: string;
+    mockupAllergiesLabel: string;
+    mockupAllergiesValue: string;
+    mockupEmergencyContactLabel: string;
+    mockupEmergencyContactValue: string;
+    howItWorksBadge: string;
+    howItWorksTitle: string;
+    howItWorksSubtitle: string;
+    step1Title: string;
+    step1Desc: string;
+    step2Title: string;
+    step2Desc: string;
+    step3Title: string;
+    step3Desc: string;
+    step4Title: string;
+    step4Desc: string;
+    caregiverBadge: string;
+    caregiverTitle: string;
+    caregiverDesc: string;
+    caregiverPoint1: string;
+    caregiverPoint2: string;
+    caregiverPoint3: string;
+    caregiverGetStarted: string;
+    caregiverManaged: string;
+    caregiverQuote: string;
+    faqTitle: string;
+    faqSubtitle: string;
+    faqs: Array<{ q: string; a: string }>;
+    footerTagline: string;
+    footerDisclaimer: string;
+    navHowItWorks: string;
+    navForCaregivers: string;
+    navFaq: string;
+  };
 }
 
 // Medical Terminology Dictionaries for bilingual mapping
@@ -265,16 +318,40 @@ export const CLINICAL_DICTIONARY: Record<string, { bn: string; hi: string }> = {
 
   // Allergies
   "Penicillin": { bn: "পেনিসিলিন", hi: "पेनिसिलिन" },
-  "Penicillin (Severe rash)": { bn: "পেনিসিলিন (তীব্র র়্যাশ)", hi: "पेनिसिलिन (गंभीर चकत्ते)" },
+  "Penicillin (Severe rash)": { bn: "পেনিসিলিন (তীব্র র়্যাশ)", hi: "पेनिसिलিন (गंभीर चकत्ते)" },
   "Penicillin (Fictional Demo - Rash)": { bn: "পেনিসিলিন (র়্যাশ)", hi: "पेनिसिलिन (चकत्ते)" },
   "Peanuts": { bn: "চিনাবাদাম", hi: "मूंगफली" },
+  "Peanut": { bn: "চিনাবাদাম", hi: "मूंगफली" },
   "Peanuts (Anaphylaxis)": { bn: "চিনাবাদাম (অ্যানাফিল্যাক্সিস)", hi: "मूंगफली (एनाफिलेक्सिस)" },
   "Peanuts (Fictional Demo - Anaphylaxis)": { bn: "চিনাবাদাম (অ্যানাফিল্যাক্সিস)", hi: "मूंगफली (एनाफिलेक्सिस)" },
-  "Sulfa Drugs": { bn: "সালফা ড্রাগস", hi: "सल्फा दवाएं" },
-  "Aspirin": { bn: "অ্যাসপিরিন", hi: "एस्पिरिन" },
-  "Shellfish": { bn: "শেলফিশ / চিংড়ি", hi: "शेलफिश / झींगा" },
-  "Latex": { bn: "ল্যাটেক্স", hi: "लेटेक्स" },
+  "Tree Nuts": { bn: "গাছের বাদাম (আখরোট, কাঠবাদাম ইত্যাদি)", hi: "ट्री नट्स (अखरोट, बादाम आदि)" },
+  "Tree Nut": { bn: "গাছের বাদাম", hi: "ट्री नट्स" },
+  "Milk": { bn: "দুধ / দুগ্ধজাত খাবার", hi: "दूध / डेयरी उत्पाद" },
+  "Cow's Milk": { bn: "গরুর দুধ", hi: "गाय का दूध" },
+  "Dairy": { bn: "দুগ্ধজাত খাবার", hi: "डेयरी उत्पाद" },
+  "Eggs": { bn: "ডিম", hi: "अंडे" },
+  "Egg": { bn: "ডিম", hi: "अंडा" },
+  "Shellfish": { bn: "শেলফিশ / চিংড়ি", hi: "शেলফিশ / झींगा" },
+  "Fish": { bn: "মাছ", hi: "मछली" },
+  "Seafood": { bn: "সামুদ্রিক খাবার", hi: "सीफूड / समुद्री भोजन" },
+  "Soy": { bn: "সয়াবিন / সোয়া", hi: "सोया / सोयाबीन" },
+  "Soybean": { bn: "সয়াবিন", hi: "सोयाबीन" },
+  "Wheat": { bn: "গম / গ্লুটেন", hi: "गेहूं / ग्लूटेन" },
+  "Gluten": { bn: "গ্লুটেন", hi: "ग्लूटेन" },
   "Pollen": { bn: "পরাগরেণু", hi: "परागकण" },
+  "Dust Mites": { bn: "ধুলোবালি / ডাস্ট মাইটস", hi: "धूल के कण / डस्ट माइट्स" },
+  "Dust Mite": { bn: "ডাস্ট মাইট", hi: "डस्ट माइट" },
+  "Dust": { bn: "ধুলোবালি", hi: "धूल" },
+  "Aspirin": { bn: "অ্যাসপিরিন", hi: "एस्पिरिन" },
+  "NSAIDs": { bn: "এনএসএআইডি (ব্যথানাশক ওষুধ)", hi: "एनएसएआईडी (दर्दनिवारक दवाएं)" },
+  "NSAID": { bn: "এনএসএআইডি (ব্যথানাশক)", hi: "एनएसएआईडी" },
+  "Ibuprofen": { bn: "আইবুপ্রোফেন", hi: "इबुप्रोफेन" },
+  "Latex": { bn: "ল্যাটেক্স", hi: "लेटेक्स" },
+  "Bee Stings": { bn: "মৌমাছির হুল", hi: "मधुमक्खी का डंक" },
+  "Bee Sting": { bn: "মৌমাছির হুল", hi: "मधुमक्खी का डंक" },
+  "Insect Stings": { bn: "পোকামাকড়ের হুল", hi: "कीड़े का डंक" },
+  "Sulfa Drugs": { bn: "সালফা ড্রাগস", hi: "सल्फा दवाएं" },
+  "Sulfonamides": { bn: "সালফোনামাইডস", hi: "सल्फोनामाइड्स" },
 
   // Common Medications
   "Metformin": { bn: "মেটফর্মিন", hi: "मेटफॉर्मिन" },
@@ -562,6 +639,83 @@ export const translations: Record<Language, TranslationSchema> = {
       dosage: "Dosage",
       frequency: "Frequency",
       bilingualNotice: "Bilingual Emergency Display"
+    },
+    home: {
+      heroBadge: "For a Safer, More Independent Life",
+      heroHeadline1: "Your Medical Info, When It",
+      heroHeadlineHighlight: "Matters Most.",
+      heroSubtitle: "A simple, secure and elder-friendly way to keep essential medical details instantly accessible during emergencies through a single, privacy-controlled QR code.",
+      createProfileButton: "Create Your Profile",
+      seeHowItWorksButton: "See How It Works",
+      benefitQuickAccessTitle: "Quick Access",
+      benefitQuickAccessDesc: "One camera scan. No passwords required.",
+      benefitPrivacyFirstTitle: "Privacy First",
+      benefitPrivacyFirstDesc: "You select exactly what is visible.",
+      benefitSeniorFriendlyTitle: "Senior Friendly",
+      benefitSeniorFriendlyDesc: "Accessible for older adults & families.",
+      mockupAge: "Age 72",
+      mockupActiveQr: "Active QR",
+      mockupScanPrompt: "Scan for Emergency Medical Details",
+      mockupScanSub: "Direct browser access • Multilingual",
+      mockupBloodGroupLabel: "Blood Group",
+      mockupBloodGroupValue: "B+ Positive",
+      mockupAllergiesLabel: "Known Allergies",
+      mockupAllergiesValue: "Penicillin, Peanuts",
+      mockupEmergencyContactLabel: "Emergency Contact",
+      mockupEmergencyContactValue: "Call Daughter (Ritu)",
+      howItWorksBadge: "Simple & Dependable",
+      howItWorksTitle: "A Simple Flow for Critical Moments",
+      howItWorksSubtitle: "Create once, review anytime, and stay prepared for unexpected emergencies.",
+      step1Title: "1. Create Your Profile",
+      step1Desc: "Register easily and enter vital information including blood group, conditions, and emergency contacts.",
+      step2Title: "2. Set Visibility Toggles",
+      step2Desc: "Explicitly select which medical fields should appear publicly on your emergency webpage.",
+      step3Title: "3. Generate & Print QR",
+      step3Desc: "Receive your unique, cryptographically hashed QR code. Download high-res PNG, wallet card PDF, or wallpaper.",
+      step4Title: "4. Scan During Emergency",
+      step4Desc: "Bystanders scan with any phone to immediately view your essential details and place a 1-tap call to your contact.",
+      caregiverBadge: "Built with Care",
+      caregiverTitle: "Empowering Caregivers, Protecting Loved Ones.",
+      caregiverDesc: "Whether managing your own health or assisting an aging parent, Medora removes the anxiety of unspoken medical conditions. Keep medication lists up to date from your computer or phone, print a fresh card, and know that help is just one scan away.",
+      caregiverPoint1: "No personal health information is stored in plaintext inside the QR image.",
+      caregiverPoint2: "Immediate multilingual support for English, Bengali (বাংলা), and Hindi (हिन्दी).",
+      caregiverPoint3: "Zero advertisement, zero data harvesting, and no commercial tracking.",
+      caregiverGetStarted: "Get Started in Minutes",
+      caregiverManaged: "Caregiver-managed profile • Verified",
+      caregiverQuote: "\"Carrying a physical emergency card and having the wallpaper on my mother's phone gives our whole family peace of mind whenever she goes for her morning walk.\"",
+      faqTitle: "Frequently Asked Questions",
+      faqSubtitle: "Everything you need to know about QR security, privacy, and emergency operation.",
+      faqs: [
+        {
+          q: "Does scanning require an app or account login?",
+          a: "No. Anyone assisting in an emergency, such as bystanders, first responders, or hospital staff, can simply point any smartphone camera at the QR code. The read-only emergency webpage opens instantly without requiring any password, app download, or login."
+        },
+        {
+          q: "What medical information is displayed upon scanning?",
+          a: "Only the vital information you explicitly permit in your Emergency Visibility settings. This typically includes blood group, critical allergies, current medications, emergency contact name and phone number, and primary physician contact. Non-approved details remain strictly private."
+        },
+        {
+          q: "What happens if I lose my printed card or phone?",
+          a: "You or your caregiver can log into your Medora account at any time and click 'Revoke QR'. The deactivated QR code will immediately become invalid, and any subsequent scans will show a deactivated status without revealing any medical information."
+        },
+        {
+          q: "Can I use the QR code as a phone lock-screen wallpaper?",
+          a: "Yes! Our platform provides a custom downloadable lock-screen wallpaper calibrated for smartphones. You can set it as your phone's lock screen so first responders can scan it without needing to unlock your device."
+        },
+        {
+          q: "How are emergency contacts notified?",
+          a: "Whenever your active QR code is successfully accessed, our platform automatically records the access event and generates a transparent notification in your account dashboard. For demonstration purposes, simulated notification alerts with timestamp and device category are recorded."
+        },
+        {
+          q: "Can a caregiver manage the profile on behalf of an elderly parent?",
+          a: "Absolutely. The platform is designed specifically with senior-friendly workflows. A caregiver can easily set up the account, maintain medication dosages, download physical cards, and monitor access logs."
+        }
+      ],
+      footerTagline: "Essential Medical Information. One Scan Away.",
+      footerDisclaimer: "© 2026 Medora. All medical information displayed is strictly for emergency demonstration.",
+      navHowItWorks: "How It Works",
+      navForCaregivers: "For Caregivers",
+      navFaq: "FAQ"
     }
   },
 
@@ -802,6 +956,83 @@ export const translations: Record<Language, TranslationSchema> = {
       dosage: "মাত্রা",
       frequency: "সেবনের সময়",
       bilingualNotice: "দ্বিভাষিক জরুরি তথ্য প্রদর্শন"
+    },
+    home: {
+      heroBadge: "একটি নিরাপদ এবং স্বাধীন জীবনের জন্য",
+      heroHeadline1: "আপনার জরুরি তথ্য, যখন তা",
+      heroHeadlineHighlight: "সবচেয়ে বেশি প্রয়োজন।",
+      heroSubtitle: "একটি সাধারণ, নিরাপদ ও প্রবীণ-বান্ধব উপায় যা একটি গোপনীয়তা-নিয়ন্ত্রিত কিউআর কোডের মাধ্যমে জরুরি মুহূর্তে প্রয়োজনীয় চিকিৎসা তথ্য দ্রুত উপলব্ধ করে।",
+      createProfileButton: "প্রোফাইল তৈরি করুন",
+      seeHowItWorksButton: "কীভাবে কাজ করে দেখুন",
+      benefitQuickAccessTitle: "দ্রুত অ্যাক্সেস",
+      benefitQuickAccessDesc: "শুধুমাত্র একটি ক্যামেরা স্ক্যান। কোনো পাসওয়ার্ড বা অ্যাপ লাগবে না।",
+      benefitPrivacyFirstTitle: "গোপনীয়তা সবার আগে",
+      benefitPrivacyFirstDesc: "জরুরি ওয়েবপেজে কী দেখা যাবে তা আপনি নির্ধারণ করেন।",
+      benefitSeniorFriendlyTitle: "প্রবীণ-বান্ধব",
+      benefitSeniorFriendlyDesc: "বয়োজ্যেষ্ঠ নাগরিক ও পরিবারের জন্য সহজ এবং নির্ভরযোগ্য।",
+      mockupAge: "বয়স ৭২",
+      mockupActiveQr: "সক্রিয় কিউআর",
+      mockupScanPrompt: "জরুরি চিকিৎসা তথ্যের জন্য স্ক্যান করুন",
+      mockupScanSub: "সরাসরি ব্রাউজারে প্রদর্শন • বহুভাষিক",
+      mockupBloodGroupLabel: "রক্তের গ্রুপ",
+      mockupBloodGroupValue: "বি+ পজিটিভ",
+      mockupAllergiesLabel: "অ্যালার্জি",
+      mockupAllergiesValue: "পেনিসিলিন, চিনাবাদাম",
+      mockupEmergencyContactLabel: "জরুরি যোগাযোগ",
+      mockupEmergencyContactValue: "কন্যাকে ফোন করুন (ঋতু)",
+      howItWorksBadge: "সহজ ও নির্ভরযোগ্য",
+      howItWorksTitle: "সংকটকালীন মুহূর্তের জন্য সহজ কার্যপ্রণালী",
+      howItWorksSubtitle: "একবার তৈরি করুন, যেকোনো সময় আপডেট করুন এবং অপ্রত্যাশিত জরুরি পরিস্থিতির জন্য সর্বদা প্রস্তুত থাকুন।",
+      step1Title: "১. প্রোফাইল তৈরি করুন",
+      step1Desc: "সহজে নিবন্ধন করুন এবং রক্তের গ্রুপ, অসুস্থতা ও জরুরি যোগাযোগের মতো প্রয়োজনীয় তথ্য লিখুন।",
+      step2Title: "২. গোপনীয়তা নির্বাচন করুন",
+      step2Desc: "জরুরি ওয়েবপেজে আপনার কোন কোন চিকিৎসা তথ্য জনসমক্ষে প্রদর্শিত হবে তা স্পষ্ট নির্বাচন করুন।",
+      step3Title: "৩. কিউআর তৈরি ও প্রিন্ট করুন",
+      step3Desc: "আপনার সুরক্ষিত কিউআর কোড পান। উচ্চমানের পিএনজি, ওয়ালেট কার্ড পিডিএফ বা ওয়ালপেপার ডাউনলোড করুন।",
+      step4Title: "৪. জরুরি অবস্থায় স্ক্যান",
+      step4Desc: "যেকোনো স্মার্টফোন দিয়ে স্ক্যান করে পথচারী বা চিকিৎসক তাৎক্ষণিক তথ্য দেখতে ও ১-ট্যাপে যোগাযোগ করতে পারবেন।",
+      caregiverBadge: "যত্নের সাথে নির্মিত",
+      caregiverTitle: "পরিচর্যাকারীদের সহায়তা, প্রিয়জনদের সুরক্ষা।",
+      caregiverDesc: "নিজের স্বাস্থ্য পরিচালনা হোক বা বয়স্ক মা-বাবার যত্ন, মেডোরা জরুরি তথ্যের অনিশ্চয়তা দূর করে। কম্পিউটার বা ফোন থেকে ওষুধের তালিকা আপডেট রাখুন, কার্ড প্রিন্ট করুন এবং আশ্বস্ত থাকুন।",
+      caregiverPoint1: "কিউআর ছবির মধ্যে কোনো ব্যক্তিগত তথ্য খোলা টেক্সটে রাখা হয় না।",
+      caregiverPoint2: "ইংরেজি, বাংলা এবং হিন্দি ভাষার তাৎক্ষণিক বহুভাষিক সহায়তা।",
+      caregiverPoint3: "শূন্য বিজ্ঞাপন, কোনো ব্যক্তিগত তথ্য সংগ্রহ বা বাণিজ্যিক ট্র্যাকিং নেই।",
+      caregiverGetStarted: "মাত্র কয়েক মিনিটে শুরু করুন",
+      caregiverManaged: "অভিভাবক-পরিচালিত প্রোফাইল • যাচাইকৃত",
+      caregiverQuote: "\"মায়ের সাথে একটি জরুরি কার্ড থাকা এবং ফোনে ওয়ালপেপার রাখা আমাদের পুরো পরিবারকে স্বস্তি দেয় যখন তিনি সকালের হাঁটায় বের হন।\"",
+      faqTitle: "সাধারণ জিজ্ঞাসা (FAQ)",
+      faqSubtitle: "কিউআর নিরাপত্তা, গোপনীয়তা এবং জরুরি প্রক্রিয়া সম্পর্কিত প্রয়োজনীয় তথ্যাবলী।",
+      faqs: [
+        {
+          q: "স্ক্যান করার জন্য কি কোনো অ্যাপ বা অ্যাকাউন্ট লগইন প্রয়োজন?",
+          a: "না। জরুরি মুহূর্তে সহায়তাকারী, পথচারী বা হাসপাতালের কর্মীরা সাধারণ স্মার্টফোন ক্যামেরা দিয়ে কিউআর কোডটি স্ক্যান করলেই রিড-অনলি জরুরি ওয়েবপেজটি অবিলম্বে খুলে যাবে। কোনো পাসওয়ার্ড বা অ্যাপ লাগবে না।"
+        },
+        {
+          q: "স্ক্যান করলে কী কী চিকিৎসা তথ্য দেখা যাবে?",
+          a: "শুধুমাত্র সেই তথ্যগুলি যা আপনি আপনার গোপনীয়তা সেটিংসে স্পষ্টভাবে অনুমোদন করেছেন। যেমন রক্তের গ্রুপ, গুরুতর অ্যালার্জি, বর্তমান ওষুধ এবং জরুরি যোগাযোগের নম্বর। অঅনুমোদিত তথ্য সম্পূর্ণ গোপন থাকে।"
+        },
+        {
+          q: "মুদ্রিত কার্ড বা ফোন হারিয়ে গেলে কী হবে?",
+          a: "আপনি বা আপনার পরিচর্যাকারী যেকোনো সময় মেডোরা অ্যাকাউন্টে লগইন করে 'কিউআর বাতিল করুন' বোতামে ক্লিক করতে পারেন। নিষ্ক্রিয় কিউআর কোডটি অবিলম্বে অকার্যকর হয়ে যাবে এবং কোনো তথ্য দেখাবে না।"
+        },
+        {
+          q: "আমি কি কিউআর কোডটিকে ফোনের লকস্ক্রিন ওয়ালপেপার হিসেবে ব্যবহার করতে পারি?",
+          a: "হ্যাঁ! আমাদের প্ল্যাটফর্মে স্মার্টফোনের জন্য উপযুক্ত একটি লকস্ক্রিন ওয়ালপেপার ডাউনলোড করার সুবিধা রয়েছে, যাতে ফোন আনলক না করেই স্ক্যান করা যায়।"
+        },
+        {
+          q: "জরুরি যোগাযোগকারীদের কীভাবে জানানো হয়?",
+          a: "সক্রিয় কিউআর কোড সফলভাবে স্ক্যান করা হলে আমাদের প্ল্যাটফর্ম স্বয়ংক্রিয়ভাবে অ্যাক্সেস লগ লিপিবদ্ধ করে এবং ড্যাশবোর্ডে বিজ্ঞপ্তি দেয়। পরীক্ষার জন্য সময় ও ডিভাইসের ধরন রেকর্ড করা হয়।"
+        },
+        {
+          q: "একজন পরিচর্যাকারী কি বয়স্ক পিতামাতার পক্ষে প্রোফাইল পরিচালনা করতে পারেন?",
+          a: "অবশ্যই। প্ল্যাটফর্মটি প্রবীণদের কথা মাথায় রেখে তৈরি করা হয়েছে। একজন পরিচর্যাকারী সহজেই অ্যাকাউন্ট খুলতে, ওষুধ পরিচালনা করতে, কার্ড ডাউনলোড করতে এবং লগ নিরীক্ষণ করতে পারেন।"
+        }
+      ],
+      footerTagline: "প্রয়োজনীয় চিকিৎসা তথ্য। মাত্র একটি স্ক্যানের দূরত্বে।",
+      footerDisclaimer: "© ২০২৬ মেডোরা। প্রদর্শিত সমস্ত চিকিৎসা তথ্য শুধুমাত্র জরুরি নমুনা প্রদর্শনের জন্য।",
+      navHowItWorks: "কার্যপ্রণালী",
+      navForCaregivers: "পরিচর্যাকারীদের জন্য",
+      navFaq: "সাধারণ জিজ্ঞাসা"
     }
   },
 
@@ -1042,6 +1273,83 @@ export const translations: Record<Language, TranslationSchema> = {
       dosage: "खुराक",
       frequency: "समय",
       bilingualNotice: "द्विभाषी आपातकालीन प्रदर्शन"
+    },
+    home: {
+      heroBadge: "एक सुरक्षित और स्वतंत्र जीवन के लिए",
+      heroHeadline1: "आपकी चिकित्सा जानकारी, जब इसकी",
+      heroHeadlineHighlight: "सबसे अधिक आवश्यकता हो।",
+      heroSubtitle: "आपात स्थिति में एक गोपनीयता-नियंत्रित क्यूआर कोड के माध्यम से आवश्यक चिकित्सा जानकारी को तुरंत सुलभ रखने का एक सरल, सुरक्षित और बुजुर्ग-अनुकूल तरीका।",
+      createProfileButton: "अपनी प्रोफाइल बनाएं",
+      seeHowItWorksButton: "जानें यह कैसे काम करता है",
+      benefitQuickAccessTitle: "त्वरित पहुंच",
+      benefitQuickAccessDesc: "केवल एक कैमरा स्कैन। किसी पासवर्ड या ऐप की आवश्यकता नहीं।",
+      benefitPrivacyFirstTitle: "गोपनीयता सर्वोपरि",
+      benefitPrivacyFirstDesc: "आप चुनते हैं कि आपातकालीन वेबपेज पर क्या दिखेगा।",
+      benefitSeniorFriendlyTitle: "वरिष्ठ नागरिकों के अनुकूल",
+      benefitSeniorFriendlyDesc: "बुजुर्गों और परिवारों के लिए सहज, सरल और भरोसेमंद।",
+      mockupAge: "आयु ७२",
+      mockupActiveQr: "सक्रिय क्यूआर",
+      mockupScanPrompt: "आपातकालीन चिकित्सा जानकारी के लिए स्कैन करें",
+      mockupScanSub: "सीधे ब्राउज़र में उपलब्ध • बहुभाषी",
+      mockupBloodGroupLabel: "रक्त समूह",
+      mockupBloodGroupValue: "बी+ पॉजिटिव",
+      mockupAllergiesLabel: "ज्ञात एलर्जी",
+      mockupAllergiesValue: "पेनिसिलिन, मूंगफली",
+      mockupEmergencyContactLabel: "आपातकालीन संपर्क",
+      mockupEmergencyContactValue: "बेटी को कॉल करें (ऋतु)",
+      howItWorksBadge: "सरल और विश्वसनीय",
+      howItWorksTitle: "महत्वपूर्ण क्षणों के लिए एक सरल प्रक्रिया",
+      howItWorksSubtitle: "एक बार बनाएं, कभी भी समीक्षा करें, और अप्रत्याशित आपात स्थितियों के लिए तैयार रहें।",
+      step1Title: "१. अपनी प्रोफाइल बनाएं",
+      step1Desc: "आसानी से पंजीकरण करें और रक्त समूह, पुरानी बीमारी तथा आपातकालीन संपर्क जैसी महत्वपूर्ण जानकारी दर्ज करें।",
+      step2Title: "२. दृश्यता टॉगल सेट करें",
+      step2Desc: "स्पष्ट रूप से चुनें कि कौन-सी चिकित्सा जानकारी आपके सार्वजनिक आपातकालीन पृष्ठ पर दिखाई देनी चाहिए।",
+      step3Title: "३. क्यूआर बनाएं और प्रिंट करें",
+      step3Desc: "अपना सुरक्षित क्यूआर कोड प्राप्त करें। उच्च गुणवत्ता वाला पीएनजी, वॉलेट कार्ड पीडीएफ या वॉलपेपर डाउनलोड करें।",
+      step4Title: "४. आपात स्थिति में स्कैन करें",
+      step4Desc: "कोई भी व्यक्ति किसी भी फोन से स्कैन करके तुरंत आपकी महत्वपूर्ण जानकारी देख सकता है और संपर्क पर १-टैप कॉल कर सकता है।",
+      caregiverBadge: "देखभाल के साथ निर्मित",
+      caregiverTitle: "देखभालकर्ताओं को सशक्त बनाना, अपनों की सुरक्षा।",
+      caregiverDesc: "चाहे अपने स्वास्थ्य का प्रबंधन करना हो या बुजुर्ग माता-पिता की सहायता, मेडोरा आपातकालीन जानकारी की चिंता को दूर करता है। कंप्यूटर या फोन से दवाओं की सूची अपडेट रखें, नया कार्ड प्रिंट करें और निश्चिंत रहें।",
+      caregiverPoint1: "क्यूआर छवि के अंदर कोई भी व्यक्तिगत स्वास्थ्य जानकारी सादे पाठ में संग्रहीत नहीं होती है।",
+      caregiverPoint2: "अंग्रेजी, बांग्ला (বাংলা) और हिंदी (हिन्दी) के लिए तत्काल बहुभाषी समर्थन।",
+      caregiverPoint3: "शून्य विज्ञापन, कोई डेटा संग्रह नहीं, और कोई व्यावसायिक ट्रैकिंग नहीं।",
+      caregiverGetStarted: "कुछ ही मिनटों में शुरू करें",
+      caregiverManaged: "देखभालकर्ता द्वारा प्रबंधित प्रोफाइल • सत्यापित",
+      caregiverQuote: "\"मेरी मां के पास आपातकालीन कार्ड होना और उनके फोन पर वॉलपेपर होना हमारे पूरे परिवार को मानसिक शांति देता है जब भी वह सुबह की सैर पर जाती हैं।\"",
+      faqTitle: "अक्सर पूछे जाने वाले प्रश्न (FAQ)",
+      faqSubtitle: "क्यूआर सुरक्षा, गोपनीयता और आपातकालीन संचालन के बारे में वह सब कुछ जो आपको जानना आवश्यक है।",
+      faqs: [
+        {
+          q: "क्या स्कैन करने के लिए किसी ऐप या अकाउंट लॉगिन की आवश्यकता है?",
+          a: "नहीं। आपात स्थिति में सहायता करने वाला कोई भी व्यक्ति, बचाव दल या अस्पताल कर्मी किसी भी स्मार्टफोन कैमरे से क्यूआर कोड को स्कैन कर सकता है। केवल पढ़ने योग्य आपातकालीन वेबपेज बिना किसी पासवर्ड या ऐप के तुरंत खुल जाता है।"
+        },
+        {
+          q: "स्कैन करने पर कौन-सी चिकित्सा जानकारी प्रदर्शित होती है?",
+          a: "केवल वही आवश्यक जानकारी जिसे आप अपनी गोपनीयता सेटिंग्स में स्पष्ट रूप से अनुमति देते हैं। इसमें आमतौर पर रक्त समूह, गंभीर एलर्जी, वर्तमान दवाइयां और आपातकालीन संपर्क नंबर शामिल होते हैं।"
+        },
+        {
+          q: "यदि मेरा प्रिंटेड कार्ड या फोन खो जाए तो क्या होगा?",
+          a: "आप या आपके देखभालकर्ता किसी भी समय अपने मेडोरा खाते में लॉग इन करके 'क्यूआर रद्द करें' पर क्लिक कर सकते हैं। निष्क्रिय किया गया क्यूआर कोड तुरंत अमान्य हो जाएगा और कोई जानकारी नहीं दिखाएगा।"
+        },
+        {
+          q: "क्या मैं क्यूआर कोड को फोन के लॉक-स्क्रीन वॉलपेपर के रूप में उपयोग कर सकता हूं?",
+          a: "हाँ! हमारा प्लेटफॉर्म स्मार्टफोन के लिए डाउनलोड करने योग्य कस्टम लॉक-स्क्रीन वॉलपेपर प्रदान करता है ताकि फोन को अनलॉक किए बिना ही स्कैन किया जा सके।"
+        },
+        {
+          q: "आपातकालीन संपर्कों को कैसे सूचित किया जाता है?",
+          a: "जब भी आपका सक्रिय क्यूआर कोड सफलतापूर्वक स्कैन किया जाता है, हमारा प्लेटफॉर्म स्वचालित रूप से एक्सेस इवेंट रिकॉर्ड करता है और डैशबोर्ड में सूचना प्रदान करता है।"
+        },
+        {
+          q: "क्या देखभालकर्ता बुजुर्ग माता-पिता की ओर से प्रोफाइल का प्रबंधन कर सकता है?",
+          a: "बिल्कुल। यह प्लेटफॉर्म विशेष रूप से वरिष्ठ नागरिकों के अनुकूल वर्कफ़्लो के साथ डिज़ाइन किया गया है। देखभालकर्ता आसानी से खाता बना सकते हैं, दवाइयां प्रबंधित कर सकते हैं और कार्ड डाउनलोड कर सकते हैं।"
+        }
+      ],
+      footerTagline: "आवश्यक चिकित्सा जानकारी। केवल एक स्कैन की दूरी पर।",
+      footerDisclaimer: "© २०२६ मेडोरा। प्रदर्शित सभी चिकित्सा जानकारी केवल आपातकालीन प्रदर्शन के उद्देश्य से है।",
+      navHowItWorks: "कार्यप्रणाली",
+      navForCaregivers: "देखभालकर्ताओं के लिए",
+      navFaq: "सामान्य प्रश्न"
     }
   }
 };

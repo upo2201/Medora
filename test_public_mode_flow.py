@@ -12,9 +12,19 @@ from seed import seed_demo_data
 class TestPublicModeTunnelFlow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        from app.test_db_guard import setup_isolated_test_db, assert_not_dev_db
+        cls.test_db_path, cls.temp_dir, cls.orig_db = setup_isolated_test_db("public_mode")
+        assert_not_dev_db(cls.test_db_path)
+        seed_demo_data(db_path=cls.test_db_path)
         cls.app = create_app()
+        cls.app.config["TESTING"] = True
+        cls.app.config["DATABASE_PATH"] = cls.test_db_path
         cls.client = cls.app.test_client()
-        seed_demo_data()
+
+    @classmethod
+    def tearDownClass(cls):
+        from app.test_db_guard import teardown_isolated_test_db
+        teardown_isolated_test_db(cls.temp_dir, cls.orig_db)
 
     def tearDown(self):
         clear_active_tunnel()

@@ -2,17 +2,41 @@ import sqlite3
 import os
 from app.config import Config
 
-def get_db():
-    conn = sqlite3.connect(Config.DATABASE_PATH)
+def get_db(db_path=None):
+    target = db_path or Config.DATABASE_PATH
+    try:
+        from flask import has_app_context, current_app
+        if has_app_context():
+            if not db_path and current_app.config.get("DATABASE_PATH"):
+                target = current_app.config["DATABASE_PATH"]
+            if current_app.config.get("TESTING"):
+                from app.test_db_guard import assert_not_dev_db
+                assert_not_dev_db(target)
+    except (ImportError, RuntimeError):
+        pass
+
+    conn = sqlite3.connect(target)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
 
-def init_db():
-    db_dir = os.path.dirname(Config.DATABASE_PATH)
+def init_db(db_path=None):
+    target = db_path or Config.DATABASE_PATH
+    try:
+        from flask import has_app_context, current_app
+        if has_app_context():
+            if not db_path and current_app.config.get("DATABASE_PATH"):
+                target = current_app.config["DATABASE_PATH"]
+            if current_app.config.get("TESTING"):
+                from app.test_db_guard import assert_not_dev_db
+                assert_not_dev_db(target)
+    except (ImportError, RuntimeError):
+        pass
+
+    db_dir = os.path.dirname(target)
     if db_dir:
         os.makedirs(db_dir, exist_ok=True)
-    with get_db() as conn:
+    with get_db(db_path=target) as conn:
         cursor = conn.cursor()
         
         # 1. Users / Auth Profiles
@@ -125,11 +149,6 @@ def init_db():
         if "emergency_contact_name_secondary" not in mp_columns:
             cursor.execute("ALTER TABLE medical_profiles ADD COLUMN emergency_contact_name_secondary TEXT;")
             
-        cursor.execute("PRAGMA table_info(notifications);")
-        notif_columns = [row["name"] for row in cursor.fetchall()]
-        if "error_message" not in notif_columns:
-            cursor.execute("ALTER TABLE notifications ADD COLUMN error_message TEXT;")
-        
         # 5. Access Logs (Privacy-Conscious, no raw IP or precise geolocation)
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS access_logs (
@@ -155,12 +174,18 @@ def init_db():
             recipient TEXT NOT NULL,
             delivery_status TEXT NOT NULL DEFAULT 'SENT',
             message TEXT NOT NULL,
+            error_message TEXT,
             is_read INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL,
             FOREIGN KEY (profile_id) REFERENCES medical_profiles (id) ON DELETE CASCADE,
             FOREIGN KEY (access_log_id) REFERENCES access_logs (id) ON DELETE SET NULL
         );
         """)
+        
+        cursor.execute("PRAGMA table_info(notifications);")
+        notif_columns = [row["name"] for row in cursor.fetchall()]
+        if "error_message" not in notif_columns:
+            cursor.execute("ALTER TABLE notifications ADD COLUMN error_message TEXT;")
         
         # Performance Indexes
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_qr_tokens_hash ON qr_tokens(token_hash);")

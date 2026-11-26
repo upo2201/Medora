@@ -32,9 +32,9 @@ export const Navbar: React.FC = () => {
 
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-text-dark/80">
-          <a href="#how-it-works" className="hover:text-burgundy transition-colors">How It Works</a>
-          <a href="#for-caregivers" className="hover:text-burgundy transition-colors">For Caregivers</a>
-          <a href="#faq" className="hover:text-burgundy transition-colors">FAQ</a>
+          <a href="#how-it-works" className="hover:text-burgundy transition-colors">{t.home.navHowItWorks}</a>
+          <a href="#for-caregivers" className="hover:text-burgundy transition-colors">{t.home.navForCaregivers}</a>
+          <a href="#faq" className="hover:text-burgundy transition-colors">{t.home.navFaq}</a>
         </nav>
 
         {/* Language Selector and Action Buttons */}
@@ -79,21 +79,21 @@ export const Navbar: React.FC = () => {
               onClick={() => setMobileMenuOpen(false)}
               className="py-2 hover:text-burgundy transition-colors"
             >
-              How It Works
+              {t.home.navHowItWorks}
             </a>
             <a
               href="#for-caregivers"
               onClick={() => setMobileMenuOpen(false)}
               className="py-2 hover:text-burgundy transition-colors"
             >
-              For Caregivers
+              {t.home.navForCaregivers}
             </a>
             <a
               href="#faq"
               onClick={() => setMobileMenuOpen(false)}
               className="py-2 hover:text-burgundy transition-colors"
             >
-              FAQ
+              {t.home.navFaq}
             </a>
           </nav>
 

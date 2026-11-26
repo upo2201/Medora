@@ -22,11 +22,13 @@ from seed import seed_demo_data
 class TestSimplifiedEmailInfrastructure(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        seed_demo_data(reset=True)
-        with get_db() as conn:
-            conn.cursor().execute("DELETE FROM users WHERE email != 'ananya.sen@example.com'")
-            conn.commit()
+        from app.test_db_guard import setup_isolated_test_db, assert_not_dev_db
+        cls.test_db_path, cls.temp_dir, cls.orig_db = setup_isolated_test_db("email_alerts")
+        assert_not_dev_db(cls.test_db_path)
+        seed_demo_data(reset=True, db_path=cls.test_db_path)
         cls.app = create_app()
+        cls.app.config["TESTING"] = True
+        cls.app.config["DATABASE_PATH"] = cls.test_db_path
         cls.client = cls.app.test_client()
 
     def test_01_registration_mandatory_emergency_notification_email(self):
@@ -376,7 +378,8 @@ class TestSimplifiedEmailInfrastructure(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        seed_demo_data(reset=True)
+        from app.test_db_guard import teardown_isolated_test_db
+        teardown_isolated_test_db(cls.temp_dir, cls.orig_db)
 
 if __name__ == "__main__":
     unittest.main()

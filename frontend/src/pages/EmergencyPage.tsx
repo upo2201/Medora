@@ -16,6 +16,7 @@ import {
 import { api } from '../services/api';
 import { EmergencyPublicData, Language } from '../types';
 import { translations, translateClinical } from '../utils/translations';
+import { transliterateName } from '../utils/transliteration';
 
 export const EmergencyPage: React.FC = () => {
   const { token } = useParams<{ token: string }>();
@@ -146,6 +147,10 @@ export const EmergencyPage: React.FC = () => {
   const ecPhone = data.emergency_contact?.phone || '';
   const clinicalTargetLang = secLang && secLang !== 'en' ? secLang : (currentLang !== 'en' ? currentLang : undefined);
 
+  // Secondary language script resolution (explicit profile value or automatic phonetic transliteration)
+  const secondaryFullName = data.full_name_secondary || (data.full_name && patientSecondLang ? transliterateName(data.full_name, patientSecondLang) : null);
+  const secondaryContactName = data.emergency_contact?.name_secondary || (data.emergency_contact?.name && patientSecondLang ? transliterateName(data.emergency_contact.name, patientSecondLang) : null);
+
   // Helper for emergency contact relationship translation
   const ecRelationshipSec = data.emergency_contact?.relationship
     ? translateClinical(data.emergency_contact.relationship, clinicalTargetLang)
@@ -238,10 +243,10 @@ export const EmergencyPage: React.FC = () => {
                 <h1 className="font-serif text-2xl sm:text-3xl font-bold text-burgundy-deep">
                   {data.full_name || 'Patient'}
                 </h1>
-                {/* Secondary Script Full Name if configured */}
-                {data.full_name_secondary && (
-                  <p className="text-base font-semibold text-burgundy mt-0.5">
-                    {data.full_name_secondary}
+                {/* Secondary Script Full Name (Explicitly provided or automatically transliterated) */}
+                {secondaryFullName && (
+                  <p className="text-sm sm:text-base font-semibold text-burgundy mt-0.5">
+                    {secondaryFullName}
                   </p>
                 )}
                 <div className="text-xs text-text-muted mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
@@ -296,9 +301,9 @@ export const EmergencyPage: React.FC = () => {
               </a>
               <div className="text-center text-[11px] text-text-muted mt-2 space-y-0.5">
                 <p>
-                  {data.emergency_contact.name_secondary && (
+                  {secondaryContactName && (
                     <strong className="text-text-dark font-medium mr-1.5">
-                      {data.emergency_contact.name_secondary} •
+                      {secondaryContactName} •
                     </strong>
                   )}
                   Direct Dial: <span className="font-mono font-semibold text-text-dark">{ecPhone}</span>
@@ -337,15 +342,19 @@ export const EmergencyPage: React.FC = () => {
               {data.allergies.map((allergy, i) => {
                 const secTerm = translateClinical(allergy, clinicalTargetLang);
                 return (
-                  <span
+                  <div
                     key={i}
-                    className="px-4 py-2 rounded-full bg-rose-50 border border-rose-200 text-medical-red text-xs font-bold inline-flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-2xl bg-rose-50 border border-rose-200 text-left space-y-0.5 shadow-soft transition-all"
                   >
-                    <span>{allergy}</span>
+                    <div className="text-xs font-bold text-medical-red leading-tight">
+                      {allergy}
+                    </div>
                     {secTerm && (
-                      <span className="text-[11px] font-medium text-rose-700/80">({secTerm})</span>
+                      <div className="text-[11px] font-semibold text-rose-800/85 leading-tight">
+                        {secTerm}
+                      </div>
                     )}
-                  </span>
+                  </div>
                 );
               })}
             </div>

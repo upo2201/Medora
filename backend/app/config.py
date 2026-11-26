@@ -32,6 +32,7 @@ class Config:
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
     
     backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    DEVELOPMENT_DB_PATH = os.path.abspath(os.path.join(backend_dir, "medora.db"))
     raw_db_path = os.getenv("DATABASE_PATH", "medora.db")
     if os.path.isabs(raw_db_path):
         DATABASE_PATH = raw_db_path

@@ -1,4 +1,5 @@
 import io
+import os
 from flask import Blueprint, request, jsonify, g, send_file
 from app.config import Config
 from app.database import get_db
@@ -46,14 +47,16 @@ def get_current_qr():
         )
         this_month_scans = cursor.fetchone()["count"]
 
-        from app.services.tunnel_service import get_active_tunnel_url
-        tunnel_url = get_active_tunnel_url()
-        detected_base_url = tunnel_url or Config.EMERGENCY_BASE_URL or request.headers.get("Origin") or request.host_url.rstrip("/")
+        from app.services.tunnel_service import get_active_tunnel_url, get_public_frontend_url, is_public_mode_active
+        detected_base_url = get_public_frontend_url(base_url_override)
+        public_active = is_public_mode_active()
         return jsonify({
             "has_active_qr": token is not None,
             "qr": token,
             "patient_name": profile["full_name"],
             "configured_base_url": detected_base_url,
+            "is_public_mode": public_active,
+            "warning": None if public_active else "No public emergency tunnel or production URL is currently active. For external phone cameras to scan this QR code, please launch Public Mode (start_public_mode.bat) or set EMERGENCY_BASE_URL.",
             "stats": {
                 "total_scans": total_scans,
                 "revoked_count": revoked_count,
@@ -81,6 +84,14 @@ def generate_qr():
                 "warning": "Incomplete profile",
                 "message": "Please set an Emergency Contact phone number in your profile before generating your QR code."
             }), 400
+
+        # Safety check: if PUBLIC_MODE is active but tunnel is disconnected, prevent generating stale QR codes
+        from app.services.tunnel_service import is_tunnel_alive
+        if os.getenv("PUBLIC_MODE") == "1" and not is_tunnel_alive() and not base_url_override:
+            return jsonify({
+                "warning": "Tunnel disconnected",
+                "message": "Public ngrok tunnel is currently disconnected. Please wait for the tunnel to reconnect or restart start_public_mode.bat before generating a QR code."
+            }), 503
 
         result = create_or_regenerate_qr(profile["id"], base_url_override)
         return jsonify({

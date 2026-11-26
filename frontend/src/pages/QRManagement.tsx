@@ -107,10 +107,18 @@ export const QRManagement: React.FC = () => {
 
   const isQrActive = qrToken?.status === 'active' && Boolean(rawToken);
   const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-  const activeTunnel = (tunnelStatus?.public_testing_mode && tunnelStatus?.tunnel_url) ? tunnelStatus.tunnel_url : '';
-  const effectiveBaseUrl = customBaseUrl.trim() || activeTunnel || configuredBaseUrl || currentOrigin;
-  const emergencyUrl = (activeTunnel && rawToken ? `${activeTunnel}/emergency/${rawToken}` : qrToken?.emergency_url) || (rawToken ? `${effectiveBaseUrl.replace(/\/$/, '')}/emergency/${rawToken}` : '');
   const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const isPublicUrl = (url?: string | null) => Boolean(url && !url.includes('localhost') && !url.includes('127.0.0.1'));
+  const activeTunnel = (tunnelStatus?.public_testing_mode && tunnelStatus?.tunnel_url) ? tunnelStatus.tunnel_url : '';
+  const hasActivePublicMode = Boolean(activeTunnel || (configuredBaseUrl && isPublicUrl(configuredBaseUrl)) || (!isLocal && isPublicUrl(currentOrigin)));
+  
+  // Public base URL strictly prioritized: custom input -> active ngrok tunnel -> configured base URL -> cloud default
+  // Guaranteed NEVER to resolve to localhost or 127.0.0.1
+  const effectiveBaseUrl = (customBaseUrl.trim() && isPublicUrl(customBaseUrl))
+    ? customBaseUrl.trim()
+    : (activeTunnel || (isPublicUrl(configuredBaseUrl) ? configuredBaseUrl : (!isLocal && isPublicUrl(currentOrigin) ? currentOrigin : 'https://medora-emergency.onrender.com')));
+  
+  const emergencyUrl = (activeTunnel && rawToken ? `${activeTunnel}/emergency/${rawToken}` : (qrToken?.emergency_url && isPublicUrl(qrToken.emergency_url) ? qrToken.emergency_url : '')) || (rawToken ? `${effectiveBaseUrl.replace(/\/$/, '')}/emergency/${rawToken}` : '');
 
   const isTunnelUrlMismatch = Boolean(
     isQrActive &&
@@ -177,6 +185,27 @@ export const QRManagement: React.FC = () => {
           </div>
         </div>
 
+        {/* Public Testing Mode Notice if running locally without active public tunnel */}
+        {!hasActivePublicMode && isLocal && (
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-left text-xs text-amber-900 space-y-2 shadow-soft">
+            <div className="flex items-center gap-2 font-bold text-amber-800 text-sm">
+              <AlertTriangle className="w-5 h-5 shrink-0 text-amber-600" />
+              <span>Public Mode Required for Smartphone Camera Scanning</span>
+            </div>
+            <p className="leading-relaxed">
+              No active public tunnel or production URL is currently detected. Phone camera apps cannot scan <code>localhost</code> addresses on your computer.
+            </p>
+            <div className="bg-amber-100/70 p-2.5 rounded-xl border border-amber-200 text-[11px] space-y-1">
+              <p className="font-semibold text-amber-950">
+                • <strong>Local Development:</strong> Run <code className="bg-white px-1.5 py-0.5 rounded text-burgundy font-mono font-bold">start_public_mode.bat</code> on your PC to launch the ngrok public tunnel.
+              </p>
+              <p className="font-semibold text-amber-950">
+                • <strong>Production (Render):</strong> The deployed HTTPS domain (via <code className="bg-white px-1.5 py-0.5 rounded text-burgundy font-mono font-bold">EMERGENCY_BASE_URL</code>) is automatically encoded into all QR codes.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Clean Empty State when no QR is generated or active */}
         {!isQrActive ? (
           <div className="max-w-2xl mx-auto py-8">
@@ -211,9 +240,9 @@ export const QRManagement: React.FC = () => {
                 <div className="space-y-1.5">
                   <input
                     type="text"
-                    value={customBaseUrl || (configuredBaseUrl && !configuredBaseUrl.includes('localhost') ? configuredBaseUrl : currentOrigin)}
+                    value={customBaseUrl || (isPublicUrl(configuredBaseUrl) ? configuredBaseUrl : activeTunnel)}
                     onChange={(e) => setCustomBaseUrl(e.target.value)}
-                    placeholder={currentOrigin || "https://your-app.onrender.com"}
+                    placeholder="https://medora-emergency.onrender.com"
                     className="w-full px-3 py-2 text-xs bg-white border border-beige-pale rounded-xl font-mono text-text-dark focus:outline-none focus:border-burgundy"
                   />
                   {isLocal ? (

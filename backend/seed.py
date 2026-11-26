@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 from werkzeug.security import generate_password_hash
 from app.database import get_db, init_db
 
-def seed_demo_data(reset=False):
-    init_db()
+def seed_demo_data(reset=False, db_path=None):
+    init_db(db_path=db_path)
     
     user_id = "demo-user-ananya-sen-uuid"
     profile_id = "demo-profile-ananya-sen-uuid"
@@ -18,7 +18,7 @@ def seed_demo_data(reset=False):
     now = datetime.now(timezone.utc)
     now_iso = now.isoformat()
     
-    with get_db() as conn:
+    with get_db(db_path=db_path) as conn:
         cursor = conn.cursor()
         
         # Check if already seeded
