@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Save,
   Plus,
@@ -25,6 +25,10 @@ import { MedicalProfile, EmergencyVisibility, MedicationItem, Language } from '.
 
 export const Profile: React.FC = () => {
   const { success, error: toastError } = useToast();
+  const toastErrorRef = useRef(toastError);
+  useEffect(() => {
+    toastErrorRef.current = toastError;
+  }, [toastError]);
   const { t, language, setLanguage } = useLanguage();
   const [activeTab, setActiveTab] = useState<'basic' | 'conditions' | 'allergies' | 'medications' | 'contact' | 'visibility'>('basic');
   const [loading, setLoading] = useState(true);
@@ -92,11 +96,11 @@ export const Profile: React.FC = () => {
         setVisibility(data.visibility);
       }
     } catch (err: any) {
-      toastError(err.message || 'Failed to load medical profile');
+      toastErrorRef.current(err.message || 'Failed to load medical profile');
     } finally {
       setLoading(false);
     }
-  }, [toastError]);
+  }, []);
 
   useEffect(() => {
     fetchProfile();
@@ -275,11 +279,10 @@ export const Profile: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                  isActive
-                    ? 'bg-burgundy text-white shadow-soft'
-                    : 'bg-white text-text-dark border border-beige-pale hover:bg-beige-pale/50'
-                }`}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${isActive
+                  ? 'bg-burgundy text-white shadow-soft'
+                  : 'bg-white text-text-dark border border-beige-pale hover:bg-beige-pale/50'
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>

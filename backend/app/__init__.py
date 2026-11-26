@@ -15,7 +15,7 @@ def create_app(config_class=Config):
         app,
         resources={r"/api/*": {"origins": "*"}},
         supports_credentials=True,
-        allow_headers=["Content-Type", "Authorization"],
+        allow_headers=["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     )
 
